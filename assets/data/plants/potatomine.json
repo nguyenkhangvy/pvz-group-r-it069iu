@@ -1,0 +1,22 @@
+{
+  "id": "potatomine",
+  "displayName": "Potato Mine",
+  "hp": 300,
+  "cost": 25,
+  "cooldown": 15,
+  "damage": 0,
+  "attackInterval": 0,
+  "range": 0,
+  "sunInterval": 0,
+  "sunAmount": 0,
+  "projectileType": null,
+  "projectilePerShot": 0,
+  "armTime": 15,
+  "explodeDelay": 0,
+  "explodeRadius": 0,
+  "explodeDamage": 1800,
+  "chewTime": 0,
+  "chompDamage": 0,
+  "blocksZombie": false,
+  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+}

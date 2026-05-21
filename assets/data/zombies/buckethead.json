@@ -1,0 +1,12 @@
+{
+  "id": "buckethead",
+  "displayName": "Buckethead Zombie",
+  "hp": 1290,
+  "speed": 21.3,
+  "damage": 100,
+  "eatInterval": 1.0,
+  "ability": null,
+  "vaultSpeedBonus": 0,
+  "speedAfterVault": 0,
+  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+}

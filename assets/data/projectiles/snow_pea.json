@@ -1,0 +1,9 @@
+{
+  "id": "snow_pea",
+  "speed": 350,
+  "damage": 20,
+  "slows": true,
+  "slowFactor": 0.5,
+  "slowDuration": 3,
+  "animation": []
+}

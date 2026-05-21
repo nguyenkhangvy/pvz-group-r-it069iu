@@ -1,0 +1,9 @@
+{
+  "id": "pea",
+  "speed": 350,
+  "damage": 20,
+  "slows": false,
+  "slowFactor": 1,
+  "slowDuration": 0,
+  "animation": []
+}

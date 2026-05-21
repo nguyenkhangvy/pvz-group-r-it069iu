@@ -1,0 +1,12 @@
+{
+  "id": "polevault",
+  "displayName": "Pole Vaulting Zombie",
+  "hp": 335,
+  "speed": 40.0,
+  "damage": 100,
+  "eatInterval": 1.0,
+  "ability": "polevault",
+  "vaultSpeedBonus": 0,
+  "speedAfterVault": 21.3,
+  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+}

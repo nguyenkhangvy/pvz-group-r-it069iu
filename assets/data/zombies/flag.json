@@ -1,0 +1,12 @@
+{
+  "id": "flag",
+  "displayName": "Flag Zombie",
+  "hp": 190,
+  "speed": 27.0,
+  "damage": 100,
+  "eatInterval": 1.0,
+  "ability": "flag",
+  "vaultSpeedBonus": 0,
+  "speedAfterVault": 0,
+  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+}
