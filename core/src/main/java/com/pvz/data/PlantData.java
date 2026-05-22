@@ -1,42 +1,71 @@
 package com.pvz.data;
 
 /**
- * PlantData: anh xa 1-1 voi file plants/<ten>.json.
- * libGDX Json se tu dien field theo TEN. Vi vay ten bien o day = ten key trong JSON.
- * Ban se ghi de file JSON sau, chi can giu DUNG ten field nay.
+ * PlantData: anh xa voi file plants/<ten>.json.
+ *
+ * Thiet ke theo NHOM (nested groups) de moi cay CHI khai bao thu no can:
+ *  - Field CHUNG (moi cay deu co): hp, cost, cooldown, animations.
+ *  - Cac NHOM TUY CHON: shoot / sun / explode / arm / chew. Cay khong dung nhom
+ *    nao thi BO HAN nhom do khoi JSON -> libGDX de null. Khong con field thua.
+ *
+ * Vi du:
+ *  - peashooter.json: chi co "shoot".
+ *  - sunflower.json:  chi co "sun".
+ *  - wallnut.json:    chi co hp cao (cay thu thuan).
+ *  - cherrybomb.json: chi co "explode".
+ *  - potatomine.json: co "arm" + "explode".
+ *  - chomper.json:    co "chew".
  */
 public class PlantData {
-    public String id;              // vd "peashooter"
-    public String displayName;     // ten hien thi tren the bai
+
+    // ----- CHUNG cho moi cay -----
+    // (Khong can field "id"/"displayName": id = TEN FILE json, DataManager map bang ten file.)
     public float hp;
     public int cost;               // gia sun
     public float cooldown;         // hoi chieu the bai (giay)
-    public float damage;           // sat thuong moi don (neu co ban)
-    public float attackInterval;   // khoang cach giua 2 lan tan cong (giay)
-    public float range;            // tam ban (pixel) - 0 = vo han / ca hang
 
-    // Sun production (cho Sunflower)
-    public float sunInterval;      // bao lau san xuat 1 sun (giay), 0 = khong
-    public int sunAmount;          // moi lan ra bao nhieu sun
+    // ----- CAC NHOM TUY CHON (null neu cay khong dung) -----
+    public ShootStats shoot;       // cay ban (Peashooter, SnowPea, Repeater)
+    public SunStats sun;           // cay san sun (Sunflower)
+    public ExplodeStats explode;   // cay no (CherryBomb, PotatoMine)
+    public ArmStats arm;           // cay can "arm" truoc (PotatoMine)
+    public ChewStats chew;         // cay nhai (Chomper)
 
-    // Hanh vi dac biet
-    public String projectileType;  // vd "pea", "snow_pea"; null neu khong ban
-    public int projectilePerShot;  // Repeater = 2
-    public float armTime;          // Potato Mine: thoi gian "arm" truoc khi co the no
-    public float explodeDelay;     // Cherry Bomb: 1.2s sau khi dat thi no
-    public int explodeRadius;      // ban kinh no theo o (Cherry = 1 -> 3x3)
-    public float explodeDamage;    // sat thuong vung no (Cherry Bomb, Potato Mine)
-    public float chewTime;         // Chomper: thoi gian nhai
-    public float chompDamage;      // Chomper: sat thuong khi an nguyen con (instant kill thuong)
-    public boolean blocksZombie;   // co chan zombie khong (Wall-nut, Chomper khi nhai...)
-
-    // Animation: ten cac region trong atlas theo tung trang thai
     public AnimationStates animations;
+
+    // ===== Cac nhom =====
+    public static class ShootStats {
+        public float attackInterval;   // giay giua 2 lan ban
+        public String projectileType;  // "pea", "snow_pea"
+        public int projectilePerShot;  // Repeater = 2
+        // (Khong co "damage"/"range": sat thuong lay tu projectile; logic ban trung
+        //  zombie dau tien cung hang nen khong dung range.)
+    }
+
+    public static class SunStats {
+        public float interval;         // giay giua 2 lan nha sun
+        public int amount;             // moi lan bao nhieu sun
+    }
+
+    public static class ExplodeStats {
+        public float delay;            // CherryBomb: 1.2s sau khi dat
+        public int radius;             // ban kinh theo o (1 -> 3x3)
+        public float damage;           // sat thuong vung no
+    }
+
+    public static class ArmStats {
+        public float armTime;          // PotatoMine: giay truoc khi san sang no
+    }
+
+    public static class ChewStats {
+        public float chewTime;         // Chomper: giay nhai
+        public float chompDamage;      // sat thuong khi an (thuong instant-kill)
+    }
 
     public static class AnimationStates {
         public String[] idle;
         public String[] shooting;
-        public String[] eating;     // khi bi an (cay bi zombie an)
-        public String[] special;    // arm/chew/explode tuy cay
+        public String[] eating;
+        public String[] special;
     }
 }
