@@ -28,7 +28,5 @@ public class PvzGame extends Game {
         AudioManager.get().dispose();
         com.pvz.util.DebugDraw.get().dispose();
     }
- @Override public void pause()   { AudioManager.get().onAppPause(); }
-@Override public void resume()  { AudioManager.get().onAppResume(); }
-@Override public void dispose() { AudioManager.get().dispose(); }
+
 }
