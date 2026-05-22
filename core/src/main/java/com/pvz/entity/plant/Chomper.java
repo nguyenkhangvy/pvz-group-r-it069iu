@@ -34,7 +34,7 @@ public class Chomper extends Plant {
     public void updateWithContext(float delta, PlantContext ctx) {
         if (chompState == ChompState.CHEWING) {
             chewTimer += delta;
-            if (chewTimer >= data.chewTime) {
+            if (chewTimer >= data.chew.chewTime) {
                 chompState = ChompState.READY;
                 chewTimer = 0f;
             }
@@ -51,7 +51,7 @@ public class Chomper extends Plant {
                 if (z.isAlive() && z.getX() < bestX) { target = z; bestX = z.getX(); }
             }
             if (target != null) {
-                target.takeDamage(data.chompDamage); // nuot chung
+                target.takeDamage(data.chew.chompDamage); // nuot chung
                 chompState = ChompState.CHEWING;
                 chewTimer = 0f;
             }

@@ -2,79 +2,99 @@ package com.pvz.entity.plant;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pvz.util.DebugDraw;
 import com.pvz.data.PlantData;
+import com.pvz.entity.AnimationComponent;
 import com.pvz.entity.Entity;
 
 /**
- * Plant: lop co so cho moi cay. Gan voi 1 o (row, col).
+ * Plant: lop CO SO TRUU TUONG cho moi cay. Gan voi 1 o (row, col).
  *
- * Cay co ban (Peashooter, Sunflower, Repeater, Wall-nut) dung truc tiep lop nay
- * + cau hinh JSON. Cay co hanh vi dac biet (CherryBomb, PotatoMine, Chomper, SnowPea
- * neu can) ke thua va override.
+ * Theo Single Responsibility: lop nay CHI lo nhung gi MOI cay deu co:
+ *   - vi tri o (row, col), hp (tu Entity)
+ *   - animation + draw (co anh thi ve anh, khong thi khoi mau)
+ *   - vong doi update / updateWithContext
  *
- * VONG DOI:
- *  - update(float delta): dem thoi gian noi bo (van khoa thoi gian).
- *  - updateWithContext(delta, ctx): hanh vi can tac dong len the gioi (no, an zombie...).
- *    GameScreen goi ham nay moi frame. Cay co ban khong can ctx nen mac dinh rong.
+ * No KHONG chua logic tan cong hay san xuat sun. Nhung thu do thuoc ve cac
+ * lop con chuyen biet:
+ *   - ShooterPlant   : cay ban (Peashooter, SnowPea, Repeater)
+ *   - SunflowerPlant : cay san sun (Sunflower)
+ *   - DefensivePlant : cay thu thuan (Wall-nut)
+ *   - CherryBomb / PotatoMine / Chomper : hanh vi dac biet
+ *
+ * Nho vay Peashooter khong con mang sunTimer vo nghia, va Sunflower khong mang
+ * attackTimer vo nghia.
  */
-public class Plant extends Entity {
+public abstract class Plant extends Entity {
 
     protected final PlantData data;
     protected final int row;
     protected final int col;
 
-    protected float attackTimer = 0f;   // dem nguoc toi luot tan cong
-    protected float sunTimer = 0f;       // cho cay san xuat sun
+    protected final AnimationComponent anim = new AnimationComponent();
 
-    public Plant(PlantData data, int row, int col, float centerX, float centerY,
-                 float width, float height) {
+    /** Khi >0: dang phat animation tam thoi (shooting/special), het thi ve idle. */
+    protected float actionAnimTimer = 0f;
+    protected static final float ACTION_ANIM_TIME = 0.3f;
+
+    protected Plant(PlantData data, int row, int col, float centerX, float centerY,
+                    float width, float height) {
         super(centerX, centerY, width, height, data.hp);
         this.data = data;
         this.row = row;
         this.col = col;
+        loadAnimations();
+    }
+
+    /** Nap cac trang thai animation tu JSON (co anh thi dung, khong thi fallback). */
+    protected void loadAnimations() {
+        if (data.animations == null) return;
+        anim.addState("idle", data.animations.idle);
+        anim.addState("shooting", data.animations.shooting);
+        anim.addState("eating", data.animations.eating);
+        anim.addState("special", data.animations.special);
+        anim.setState("idle");
     }
 
     @Override
     public void update(float delta) {
-        attackTimer += delta;
-        sunTimer += delta;
+        if (actionAnimTimer > 0f) {
+            actionAnimTimer -= delta;
+            if (actionAnimTimer <= 0f) anim.setState("idle");
+        }
+        anim.update(delta);
     }
 
     /**
-     * Hanh vi can tac dong len the gioi. Cay co ban khong lam gi.
-     * Lop con (CherryBomb, PotatoMine, Chomper) override.
+     * Hanh vi can tac dong len the gioi (no, an zombie...). Mac dinh chi update noi bo.
+     * Lop con (CherryBomb, PotatoMine, Chomper) override khi can ctx.
      */
     public void updateWithContext(float delta, PlantContext ctx) {
         update(delta);
     }
 
-    public boolean canAttack() {
-        if (data.attackInterval <= 0) return false;
-        if (attackTimer >= data.attackInterval) {
-            attackTimer = 0f;
-            return true;
-        }
-        return false;
+    /** Phat animation "shooting" trong giay lat roi tu ve idle. */
+    public void playShootAnim() {
+        anim.setState("shooting");
+        actionAnimTimer = ACTION_ANIM_TIME;
     }
 
-    public boolean canProduceSun() {
-        if (data.sunInterval <= 0) return false;
-        if (sunTimer >= data.sunInterval) {
-            sunTimer = 0f;
-            return true;
-        }
-        return false;
-    }
-
-    /** Cay co ban CO ban dan tu xa khong? */
-    public boolean isShooter() {
-        return data.projectileType != null && data.attackInterval > 0;
+    /** Phat animation "special" trong giay lat roi tu ve idle. */
+    public void playSpecialAnim() {
+        anim.setState("special");
+        actionAnimTimer = ACTION_ANIM_TIME;
     }
 
     @Override
     public void draw(SpriteBatch batch) {
-        // TODO: ve animation tu atlas khi co asset
+        TextureRegion frame = anim.getFrame();
+        if (frame != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
+        } else {
+            drawDebug(batch);
+        }
     }
 
     @Override
@@ -85,17 +105,10 @@ public class Plant extends Entity {
     public int getRow() { return row; }
     public int getCol() { return col; }
     public PlantData getData() { return data; }
-    public boolean blocksZombie() { return data.blocksZombie; }
 
     /**
-     * Zombie co DUNG LAI an cay nay khong?
-     *
-     * QUAN TRONG: trong PvZ, zombie dung lai an MOI cay no gap (Peashooter,
-     * Sunflower, Wall-nut...), khong chi cay "chan". Vi vay mac dinh = true.
-     *
-     * Ngoai le (zombie di XUYEN qua, khong dung): cay sap tu bien mat/no
-     * nhu Cherry Bomb, hoac Potato Mine da arm (se no ngay khi cham).
-     * Cac lop con override ham nay.
+     * Zombie co DUNG LAI an cay nay khong? Mac dinh = true (zombie an moi cay
+     * no gap). Ngoai le: cay sap no/bien mat (Cherry, Potato da arm) override = false.
      */
     public boolean isEatable() {
         return true;

@@ -25,9 +25,9 @@ public class CherryBomb extends Plant {
     public void updateWithContext(float delta, PlantContext ctx) {
         if (exploded) return;
         fuse += delta;
-        if (fuse >= data.explodeDelay) {
+        if (fuse >= data.explode.delay) {
             // No: gay sat thuong vung
-            ctx.damageArea(row, col, Math.max(1, data.explodeRadius), data.explodeDamage);
+            ctx.damageArea(row, col, Math.max(1, data.explode.radius), data.explode.damage);
             exploded = true;
             kill();              // cherry bomb bien mat sau khi no
             ctx.removePlant(this);
@@ -37,7 +37,7 @@ public class CherryBomb extends Plant {
     @Override
     public void drawDebug(SpriteBatch batch) {
         // do dam khi sap no
-        float t = data.explodeDelay > 0 ? Math.min(1f, fuse / data.explodeDelay) : 1f;
+        float t = data.explode.delay > 0 ? Math.min(1f, fuse / data.explode.delay) : 1f;
         Color c = new Color(1f, 0.2f * (1f - t), 0f, 1f);
         DebugDraw.get().rectCentered(batch, x, y, width, height, c);
     }
