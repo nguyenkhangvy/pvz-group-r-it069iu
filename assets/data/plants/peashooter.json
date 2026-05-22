@@ -1,22 +1,22 @@
 {
-  "id": "peashooter",
-  "displayName": "Peashooter",
   "hp": 300,
   "cost": 100,
-  "cooldown": 7.5,
-  "damage": 20,
-  "attackInterval": 1.5,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": "pea",
-  "projectilePerShot": 1,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": false,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 5,
+  "shoot": {
+    "attackInterval": 1.5,
+    "projectileType": "pea",
+    "projectilePerShot": 1
+  },
+  "animations": {
+    "idle": [
+      "peashooter_idle_0",
+      "peashooter_idle_1"
+    ],
+    "shooting": [
+      "peashooter_shoot_0",
+      "peashooter_shoot_1"
+    ],
+    "eating": [],
+    "special": []
+  }
 }

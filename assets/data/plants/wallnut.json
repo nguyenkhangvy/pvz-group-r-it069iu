@@ -1,22 +1,16 @@
 {
-  "id": "wallnut",
-  "displayName": "Wall-nut",
   "hp": 4000,
   "cost": 50,
-  "cooldown": 15,
-  "damage": 0,
-  "attackInterval": 0,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": null,
-  "projectilePerShot": 0,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": true,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 30,
+  "animations": {
+    "idle": [
+      "wallnut_idle"
+    ],
+    "shooting": [],
+    "eating": [],
+    "special": [
+      "wallnut_special_0",
+      "wallnut_special_1"
+    ]
+  }
 }

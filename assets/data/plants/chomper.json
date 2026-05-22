@@ -1,22 +1,21 @@
 {
-  "id": "chomper",
-  "displayName": "Chomper",
   "hp": 300,
   "cost": 150,
-  "cooldown": 7.5,
-  "damage": 0,
-  "attackInterval": 0,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": null,
-  "projectilePerShot": 0,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 42,
-  "chompDamage": 999999,
-  "blocksZombie": true,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 7,
+  "chew": {
+    "chewTime": 42,
+    "chompDamage": 9999
+  },
+  "animations": {
+    "idle": [
+      "chomper_idle_0",
+      "chomper_idle_1"
+    ],
+    "shooting": [],
+    "eating": [],
+    "special": [
+      "chomper_special_0",
+      "chomper_special_1"
+    ]
+  }
 }
