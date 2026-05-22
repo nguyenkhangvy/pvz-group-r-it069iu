@@ -24,8 +24,6 @@ import com.pvz.manager.ScreenManager;
 import com.pvz.system.GridSystem;
 import com.pvz.util.DebugDraw;
 import com.pvz.system.WaveSystem;
-import com.pvz.manager.AudioManager;
-import com.pvz.manager.SoundKeys;
 
 /**
  * GameScreen: man choi chinh.
@@ -237,8 +235,8 @@ public class GameScreen extends BaseScreen implements PlantContext {
         // P = pause/resume (mo menu giua game)
         if (Gdx.input.isKeyJustPressed(Input.Keys.P) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             paused = !paused;
-            if (paused){ pauseMenu.reset();
-                 AudioManager.get().playGameSound(SoundKeys.GAMEPLAY_PAUSE);
+            if (paused) pauseMenu.reset();
+                
         }
         // S = speed 2x (chi khi da unlock o level 4)
         if (Gdx.input.isKeyJustPressed(Input.Keys.S) && level >= GameConfig.SPEED_UNLOCK_LEVEL) {
@@ -324,7 +322,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
                     sun -= p.getData().cost;
                     plantGrid[row][col] = p;
                     plants.add(p);
-                    AudioManager.get().playGameSound(SoundKeys.PEASHOOTER_PLANT);
+                    
                     cardCooldown.put(selectedPlant, p.getData().cooldown); // bat dau hoi chieu
                 }
                 // dat xong (hoac that bai) -> nha cay, muon dat tiep phai bam the lai
@@ -509,14 +507,14 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
     private void win() {
         ended = true;
-        AudioManager.get().playMusic(SoundKeys.WIN_MUSIC, false);
+        
         markSwitched();
         ScreenManager.get().setScreen(new WinScreen(level));
     }
 
     private void lose() {
         ended = true;
-        AudioManager.get().playMusic(SoundKeys.LOSE_MUSIC, false);
+      
         markSwitched();
         ScreenManager.get().setScreen(new LoseScreen(level));
     }
