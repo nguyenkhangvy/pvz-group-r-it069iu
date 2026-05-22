@@ -4,15 +4,25 @@ import com.pvz.core.GameConfig;
 import com.pvz.data.PlantData;
 import com.pvz.entity.plant.CherryBomb;
 import com.pvz.entity.plant.Chomper;
+import com.pvz.entity.plant.DefensivePlant;
 import com.pvz.entity.plant.Plant;
 import com.pvz.entity.plant.PotatoMine;
+import com.pvz.entity.plant.ShooterPlant;
+import com.pvz.entity.plant.SunflowerPlant;
 import com.pvz.manager.DataManager;
 import com.pvz.system.GridSystem;
 
 /**
  * PlantFactory (FACTORY METHOD pattern).
- * Tao dung lop con theo id. Cay co ban (peashooter, sunflower, wallnut, snowpea,
- * repeater) dung Plant base + data. Cay co hanh vi rieng dung lop con.
+ *
+ * Map id -> dung lop chuyen biet:
+ *   peashooter, snowpea, repeater -> ShooterPlant   (cay ban)
+ *   sunflower                     -> SunflowerPlant (cay san sun)
+ *   wallnut                       -> DefensivePlant (cay thu)
+ *   cherrybomb / potatomine / chomper -> lop hanh vi dac biet
+ *
+ * Nho tach lop, moi cay chi mang dung trach nhiem cua no (Single Responsibility):
+ * Peashooter khong con sunTimer, Sunflower khong con attackTimer.
  */
 public final class PlantFactory {
 
@@ -37,9 +47,19 @@ public final class PlantFactory {
                 return new PotatoMine(pd, row, col, cx, cy, w, h);
             case "chomper":
                 return new Chomper(pd, row, col, cx, cy, w, h);
-            // peashooter, sunflower, wallnut, snowpea, repeater dung Plant base:
+            case "sunflower":
+                return new SunflowerPlant(pd, row, col, cx, cy, w, h);
+            case "wallnut":
+                return new DefensivePlant(pd, row, col, cx, cy, w, h);
+            case "peashooter":
+            case "snowpea":
+            case "repeater":
+                return new ShooterPlant(pd, row, col, cx, cy, w, h);
             default:
-                return new Plant(pd, row, col, cx, cy, w, h);
+                // cay moi chua phan loai: doan theo nhom data co mat.
+                if (pd.shoot != null) return new ShooterPlant(pd, row, col, cx, cy, w, h);
+                if (pd.sun != null)   return new SunflowerPlant(pd, row, col, cx, cy, w, h);
+                return new DefensivePlant(pd, row, col, cx, cy, w, h);
         }
     }
 }

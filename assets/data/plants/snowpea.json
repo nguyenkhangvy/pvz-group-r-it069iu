@@ -1,22 +1,22 @@
 {
-  "id": "snowpea",
-  "displayName": "Snow Pea",
   "hp": 300,
   "cost": 175,
-  "cooldown": 7.5,
-  "damage": 20,
-  "attackInterval": 1.5,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": "snow_pea",
-  "projectilePerShot": 1,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": false,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 5,
+  "shoot": {
+    "attackInterval": 1.5,
+    "projectileType": "snow_pea",
+    "projectilePerShot": 1
+  },
+  "animations": {
+    "idle": [
+      "snowpea_idle_0",
+      "snowpea_idle_1"
+    ],
+    "shooting": [
+      "snowpea_shoot_0",
+      "snowpea_shoot_1"
+    ],
+    "eating": [],
+    "special": []
+  }
 }

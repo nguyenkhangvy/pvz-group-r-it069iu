@@ -1,22 +1,21 @@
 {
-  "id": "sunflower",
-  "displayName": "Sunflower",
   "hp": 300,
   "cost": 50,
-  "cooldown": 7.5,
-  "damage": 0,
-  "attackInterval": 0,
-  "range": 0,
-  "sunInterval": 24.25,
-  "sunAmount": 25,
-  "projectileType": null,
-  "projectilePerShot": 0,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": false,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 5,
+  "sun": {
+    "interval": 12,
+    "amount": 25
+  },
+  "animations": {
+    "idle": [
+      "sunflower_idle_0",
+      "sunflower_idle_1"
+    ],
+    "shooting": [],
+    "eating": [],
+    "special": [
+      "sunflower_special_0",
+      "sunflower_special_1"
+    ]
+  }
 }

@@ -4,51 +4,51 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
-import java.util.HashMap;
-import java.util.Map;
+import com.badlogic.gdx.utils.ObjectMap;
 
 /**
- * AudioManager - Quản lý toàn bộ âm thanh game PvZ.
+ * AudioManager (SINGLETON): quan ly 3 loai am thanh:
+ *  - theme music (nhac nen, lap) -> Music (stream tu dia, cho file dai)
+ *  - click sound (tieng bam nut)  -> Sound (nap san vao RAM, cho file ngan)
+ *  - game sound (ban, an, no...)  -> Sound
  *
- * CÁCH DÙNG:
+ * On/Off doc tu SaveManager.settings() (luu file rieng).
  *
- *   // Phát sound ngắn (bắn đậu, zombie chết, UI...)
- *   AudioManager.get().playGameSound(SoundKeys.PEASHOOTER_THROW);
- *   AudioManager.get().playClick(SoundKeys.UI_BUTTONCLICK);
+ * QUAN TRONG ve hieu nang:
+ *  - Sound duoc CACHE: moi file chi nap 1 lan, phat lai nhieu lan. KHONG nap
+ *    lai tu dia moi lan ban (tranh lag + ro ri bo nho).
+ *  - Tat ca file dat trong assets/audio/. Ta chi truyen TEN FILE (vd "shoot"),
+ *    AudioManager tu ghep duong dan + tu thu cac duoi pho bien (.ogg, .mp3, .wav).
+ *  - Thieu file -> bo qua an toan, khong crash.
  *
- *   // Phát nhạc nền (loop)
- *   AudioManager.get().playTheme(SoundKeys.INTRO_PHONOGRAPH);
- *
- *   // Phát nhạc một lần (win/lose/wave)
- *   AudioManager.get().playMusic(SoundKeys.WIN_MUSIC, false);
- *   AudioManager.get().playMusic(SoundKeys.GAMEPLAY_HUGEWAVE, false);
- *
- *   // Phát ngẫu nhiên (groan zombie)
- *   AudioManager.get().playRandom(
- *       SoundKeys.ZOMBIE_GROAN, SoundKeys.ZOMBIE_GROAN2,
- *       SoundKeys.ZOMBIE_GROAN3, SoundKeys.ZOMBIE_GROAN4
- *   );
- *
- *   // Pause/resume khi nhấn nút pause
- *   AudioManager.get().pauseTheme();
- *   AudioManager.get().resumeTheme();
- *
- *   // Dispose khi thoát game
- *   AudioManager.get().dispose();
+ * Cach dung tu cho khac:
+ *   AudioManager.get().playTheme(AudioManager.THEME);
+ *   AudioManager.get().playClick();
+ *   AudioManager.get().playGameSound(AudioManager.SHOOT);
  */
 public final class AudioManager {
 
+    private static final String AUDIO_DIR = "audio/";
+    private static final String[] EXTS = { ".ogg", ".mp3", ".wav" };
+
+    // ----- Ten file am thanh (KHONG co duoi). Ban dat file dung ten nay -----
+    public static final String THEME      = "theme";        // nhac nen
+    public static final String CLICK      = "click";        // bam nut
+    public static final String SHOOT      = "shoot";        // cay ban dan
+    public static final String PLANT      = "plant";        // dat cay xuong
+    public static final String SUN_PICK   = "sun";          // nhat sun
+    public static final String ZOMBIE_EAT = "zombie_eat";   // zombie an cay
+    public static final String EXPLODE    = "explode";      // cherry/potato no
+    public static final String MOWER      = "mower";        // may xen co chay
+    public static final String WIN        = "win";          // thang man
+    public static final String LOSE       = "lose";         // thua man
+
     private static AudioManager instance;
 
-    // Cache sound để tránh memory leak (không newSound() mỗi lần nữa)
-    private final Map<String, Sound> soundCache = new HashMap<>();
-
-    // Nhạc nền loop (theme)
     private Music themeMusic;
-    private String themePath;
-
-    // Nhạc một lần (wave, win, lose)
-    private Music oneShotMusic;
+    private String themeKey;                                // ten theme dang phat
+    private final ObjectMap<String, Sound> soundCache = new ObjectMap<>();
+    private final ObjectMap<String, Boolean> missing = new ObjectMap<>(); // file da biet la khong co
 
     private AudioManager() {}
 
@@ -57,88 +57,83 @@ public final class AudioManager {
         return instance;
     }
 
-    // ---------------------------------------------------------------
-    // THEME MUSIC (nhạc nền, loop)
-    // ---------------------------------------------------------------
+    /** Tim FileHandle theo ten (thu .ogg/.mp3/.wav). Tra null neu khong co. */
+    private FileHandle resolve(String name) {
+        if (name == null) return null;
+        for (String ext : EXTS) {
+            FileHandle f = Gdx.files.internal(AUDIO_DIR + name + ext);
+            if (f.exists()) return f;
+        }
+        return null;
+    }
 
-    /** Phát nhạc nền loop. Nếu đang phát cùng bài thì không làm gì. */
-    public void playTheme(String path) {
+    // ===================== THEME (Music) =====================
+    /** Phat nhac nen (lap). name vd AudioManager.THEME. */
+    public void playTheme(String name) {
+        themeKey = name;
         if (!SaveManager.get().settings().themeMusicOn) return;
-        if (path.equals(themePath) && themeMusic != null && themeMusic.isPlaying()) return;
+        startThemeIfNeeded();
+    }
 
-        stopTheme();
-        FileHandle f = Gdx.files.internal(path);
-        if (!f.exists()) { Gdx.app.log("AudioManager", "Chua co nhac: " + path); return; }
-
-        themeMusic = Gdx.audio.newMusic(f);
-        themeMusic.setLooping(true);
-        themeMusic.setVolume(0.7f);
-        themeMusic.play();
-        themePath = path;
+    private void startThemeIfNeeded() {
+        if (themeKey == null) return;
+        if (themeMusic == null) {
+            FileHandle f = resolve(themeKey);
+            if (f == null) { Gdx.app.log("AudioManager", "Chua co nhac nen: " + themeKey); return; }
+            themeMusic = Gdx.audio.newMusic(f);
+            themeMusic.setLooping(true);
+            themeMusic.setVolume(0.6f);
+        }
+        if (!themeMusic.isPlaying()) themeMusic.play();
     }
 
     public void stopTheme() {
-        if (themeMusic != null) {
-            themeMusic.stop();
-            themeMusic.dispose();
-            themeMusic = null;
-            themePath = null;
-        }
-    }
-
-    public void pauseTheme() {
-        if (themeMusic != null && themeMusic.isPlaying()) themeMusic.pause();
-    }
-
-    public void resumeTheme() {
-        if (themeMusic != null && !themeMusic.isPlaying()
-                && SaveManager.get().settings().themeMusicOn) {
-            themeMusic.play();
-        }
+        if (themeMusic != null) themeMusic.stop();
     }
 
     public void setThemeOn(boolean on) {
         SaveManager.get().settings().themeMusicOn = on;
         SaveManager.get().persistSettings();
-        if (!on) stopTheme();
+        if (on) startThemeIfNeeded();
+        else stopTheme();
     }
 
-    // ---------------------------------------------------------------
-    // ONE-SHOT MUSIC (wave lớn, win, lose — phát 1 lần, không loop)
-    // ---------------------------------------------------------------
-
-    /**
-     * Phát nhạc một lần (win/lose/wave). Dừng bài cũ trước khi phát bài mới.
-     * @param loop true = loop, false = phát 1 lần
-     */
-    public void playMusic(String path, boolean loop) {
-        if (!SaveManager.get().settings().themeMusicOn) return;
-        stopOneShotMusic();
-
-        FileHandle f = Gdx.files.internal(path);
-        if (!f.exists()) { Gdx.app.log("AudioManager", "Chua co music: " + path); return; }
-
-        oneShotMusic = Gdx.audio.newMusic(f);
-        oneShotMusic.setLooping(loop);
-        oneShotMusic.setVolume(0.8f);
-        oneShotMusic.play();
-    }
-
-    public void stopOneShotMusic() {
-        if (oneShotMusic != null) {
-            oneShotMusic.stop();
-            oneShotMusic.dispose();
-            oneShotMusic = null;
-        }
-    }
-
-    // ---------------------------------------------------------------
-    // CLICK SOUND (UI buttons)
-    // ---------------------------------------------------------------
-
-    public void playClick(String path) {
+    // ===================== CLICK & GAME SOUND (Sound) =====================
+    /** Tieng bam nut. */
+    public void playClick() {
         if (!SaveManager.get().settings().clickSoundOn) return;
-        playOneShot(path);
+        play(CLICK, 1f);
+    }
+
+    /** Tieng trong game (ban, an, no...). name vd AudioManager.SHOOT. */
+    public void playGameSound(String name) {
+        if (!SaveManager.get().settings().gameSoundOn) return;
+        play(name, 1f);
+    }
+
+    public void playGameSound(String name, float volume) {
+        if (!SaveManager.get().settings().gameSoundOn) return;
+        play(name, volume);
+    }
+
+    /** Nap (1 lan) va phat 1 sound. */
+    private void play(String name, float volume) {
+        Sound s = getSound(name);
+        if (s != null) s.play(volume);
+    }
+
+    private Sound getSound(String name) {
+        if (soundCache.containsKey(name)) return soundCache.get(name);
+        if (missing.containsKey(name)) return null;       // da biet khong co
+        FileHandle f = resolve(name);
+        if (f == null) {
+            Gdx.app.log("AudioManager", "Chua co sound: " + name);
+            missing.put(name, true);
+            return null;
+        }
+        Sound s = Gdx.audio.newSound(f);
+        soundCache.put(name, s);
+        return s;
     }
 
     public void setClickOn(boolean on) {
@@ -146,79 +141,14 @@ public final class AudioManager {
         SaveManager.get().persistSettings();
     }
 
-    // ---------------------------------------------------------------
-    // GAME SOUND (plants, zombies, gameplay)
-    // ---------------------------------------------------------------
-
-    public void playGameSound(String path) {
-        if (!SaveManager.get().settings().gameSoundOn) return;
-        playOneShot(path);
-    }
-
-    /**
-     * Phát ngẫu nhiên 1 trong nhiều sound — dùng cho groan zombie.
-     * Ví dụ:
-     *   AudioManager.get().playRandom(
-     *       SoundKeys.ZOMBIE_GROAN, SoundKeys.ZOMBIE_GROAN2,
-     *       SoundKeys.ZOMBIE_GROAN3, SoundKeys.ZOMBIE_GROAN4
-     *   );
-     */
-    public void playRandom(String... paths) {
-        if (!SaveManager.get().settings().gameSoundOn) return;
-        if (paths.length == 0) return;
-        int idx = (int)(Math.random() * paths.length);
-        playOneShot(paths[idx]);
-    }
-
     public void setGameSoundOn(boolean on) {
         SaveManager.get().settings().gameSoundOn = on;
         SaveManager.get().persistSettings();
     }
 
-    // ---------------------------------------------------------------
-    // PAUSE / RESUME toàn bộ (gọi từ ApplicationListener)
-    // ---------------------------------------------------------------
-
-    /** Gọi trong ApplicationListener.pause() khi game bị minimize. */
-    public void onAppPause() {
-        pauseTheme();
-    }
-
-    /** Gọi trong ApplicationListener.resume() khi game mở lại. */
-    public void onAppResume() {
-        resumeTheme();
-    }
-
-    // ---------------------------------------------------------------
-    // INTERNAL - cache sound để tránh memory leak
-    // ---------------------------------------------------------------
-
-    /**
-     * FIX so với code cũ: dùng cache thay vì newSound() mỗi lần.
-     * Sound được giữ trong RAM và tái sử dụng — không leak nữa.
-     */
-    private void playOneShot(String path) {
-        Sound sound = soundCache.get(path);
-        if (sound == null) {
-            FileHandle f = Gdx.files.internal(path);
-            if (!f.exists()) {
-                Gdx.app.log("AudioManager", "Chua co sound: " + path);
-                return;
-            }
-            sound = Gdx.audio.newSound(f);
-            soundCache.put(path, sound);
-        }
-        sound.play();
-    }
-
-    // ---------------------------------------------------------------
-    // DISPOSE
-    // ---------------------------------------------------------------
-
-    /** Gọi trong ApplicationListener.dispose() khi thoát game. */
+    // ===================== DISPOSE =====================
     public void dispose() {
-        stopTheme();
-        stopOneShotMusic();
+        if (themeMusic != null) { themeMusic.dispose(); themeMusic = null; }
         for (Sound s : soundCache.values()) s.dispose();
         soundCache.clear();
     }

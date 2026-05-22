@@ -16,7 +16,7 @@ import com.pvz.util.DebugDraw;
  *  - Sau khi arm xong: zombie nao vao cung o -> NO ngay, giet zombie cung o
  *    (va vung explodeRadius neu >0), roi tu bien mat.
  *
- * Luu y: trong luc arm, blocksZombie nen = false de zombie di vao "dam" no
+ * Luu y: trong luc arm, PotatoMine khong an duoc (isEatable=false) de zombie
  *  -> nhung de zombie dung lai an, ta cho no block. Theo mo ta cua ban:
  *  "trong thoi gian arm zombie co the can no bien mat khong no" => block + bi an.
  */
@@ -36,15 +36,15 @@ public class PotatoMine extends Plant {
 
         if (!armed) {
             armTimer += delta;
-            if (armTimer >= data.armTime) armed = true;
+            if (armTimer >= data.arm.armTime) armed = true;
             return; // chua arm xong thi khong no
         }
 
         // da arm: co zombie cung o -> no
         Array<Zombie> here = ctx.zombiesInCell(row, col);
         if (here.size > 0) {
-            int radius = Math.max(0, data.explodeRadius);
-            ctx.damageArea(row, col, radius, data.explodeDamage);
+            int radius = Math.max(0, data.explode.radius);
+            ctx.damageArea(row, col, radius, data.explode.damage);
             exploded = true;
             kill();
             ctx.removePlant(this);

@@ -1,22 +1,21 @@
 {
-  "id": "cherrybomb",
-  "displayName": "Cherry Bomb",
-  "hp": 999999,
+  "hp": 300,
   "cost": 150,
   "cooldown": 50,
-  "damage": 0,
-  "attackInterval": 0,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": null,
-  "projectilePerShot": 0,
-  "armTime": 0,
-  "explodeDelay": 1.2,
-  "explodeRadius": 1,
-  "explodeDamage": 1800,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": false,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "explode": {
+    "delay": 1.2,
+    "radius": 1,
+    "damage": 1800
+  },
+  "animations": {
+    "idle": [
+      "cherrybomb_idle"
+    ],
+    "shooting": [],
+    "eating": [],
+    "special": [
+      "cherrybomb_special_0",
+      "cherrybomb_special_1"
+    ]
+  }
 }

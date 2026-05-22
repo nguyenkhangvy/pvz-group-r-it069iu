@@ -1,9 +1,11 @@
 {
-  "id": "snow_pea",
   "speed": 350,
   "damage": 20,
-  "slows": true,
-  "slowFactor": 0.5,
-  "slowDuration": 3,
-  "animation": []
+  "slow": {
+    "factor": 0.5,
+    "duration": 4
+  },
+  "animation": [
+    "snow_pea"
+  ]
 }

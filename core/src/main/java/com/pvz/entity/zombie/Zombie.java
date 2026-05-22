@@ -2,8 +2,10 @@ package com.pvz.entity.zombie;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pvz.util.DebugDraw;
 import com.pvz.data.ZombieData;
+import com.pvz.entity.AnimationComponent;
 import com.pvz.entity.Entity;
 
 /**
@@ -27,11 +29,24 @@ public class Zombie extends Entity {
     protected float slowTimer = 0f;
     protected float slowFactor = 1f;
 
+    protected final AnimationComponent anim = new AnimationComponent();
+
     public Zombie(ZombieData data, int row, float startX, float centerY,
                   float width, float height) {
         super(startX, centerY, width, height, data.hp);
         this.data = data;
         this.row = row;
+        loadAnimations();
+    }
+
+    /** Nap animation tu JSON (fallback khoi mau neu chua co anh). */
+    protected void loadAnimations() {
+        if (data.animations == null) return;
+        anim.addState("walking", data.animations.walking);
+        anim.addState("eating", data.animations.eating);
+        anim.addState("dying", data.animations.dying);
+        anim.addState("special", data.animations.special);
+        anim.setState("walking");
     }
 
     @Override
@@ -44,9 +59,12 @@ public class Zombie extends Entity {
 
         if (state == State.WALKING) {
             x -= data.speed * slowFactor * delta;
+            anim.setState("walking");
         } else if (state == State.EATING) {
             eatTimer += delta;
+            anim.setState("eating");
         }
+        anim.update(delta);
     }
 
     public boolean canEatBite() {
@@ -64,7 +82,13 @@ public class Zombie extends Entity {
 
     @Override
     public void draw(SpriteBatch batch) {
-        // TODO: animation tu atlas
+        TextureRegion frame = anim.getFrame();
+        if (frame != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
+        } else {
+            drawDebug(batch);
+        }
     }
 
     @Override

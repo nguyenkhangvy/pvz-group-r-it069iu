@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.pvz.core.GameConfig;
 import com.pvz.manager.SaveManager;
 import com.pvz.manager.ScreenManager;
+import com.pvz.manager.AudioManager;
 
 /**
  * StartupScreen (man WELCOME).
@@ -39,6 +40,7 @@ public class StartupScreen extends BaseScreen {
 
         startBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, com.badlogic.gdx.scenes.scene2d.Actor a) {
+                AudioManager.get().playClick();
                 // Start New: dat lai tien do ve level 1 (Continue sau do cung se la 1)
                 SaveManager.get().resetToFirstLevel();
                 ScreenManager.get().setScreen(new ChoosePlantScreen(GameConfig.FIRST_LEVEL));
@@ -47,6 +49,7 @@ public class StartupScreen extends BaseScreen {
 
         continueBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, com.badlogic.gdx.scenes.scene2d.Actor a) {
+                AudioManager.get().playClick();
                 int lv = SaveManager.get().getLastUnlockedLevel();
                 ScreenManager.get().setScreen(new ChoosePlantScreen(lv));
             }
@@ -54,6 +57,7 @@ public class StartupScreen extends BaseScreen {
 
         musicBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, com.badlogic.gdx.scenes.scene2d.Actor a) {
+                AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new MusicScreen());
             }
         });

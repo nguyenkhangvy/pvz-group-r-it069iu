@@ -1,12 +1,20 @@
 {
-  "id": "conehead",
-  "displayName": "Conehead Zombie",
   "hp": 560,
-  "speed": 21.3,
-  "damage": 100,
+  "speed": 22,
+  "damage": 20,
   "eatInterval": 1.0,
-  "ability": null,
-  "vaultSpeedBonus": 0,
-  "speedAfterVault": 0,
-  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+  "animations": {
+    "walking": [
+      "conehead_walk_0",
+      "conehead_walk_1"
+    ],
+    "eating": [
+      "conehead_eat_0",
+      "conehead_eat_1"
+    ],
+    "dying": [
+      "conehead_die"
+    ],
+    "special": []
+  }
 }
