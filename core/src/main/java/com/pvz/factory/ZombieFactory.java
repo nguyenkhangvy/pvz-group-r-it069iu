@@ -28,7 +28,8 @@ public final class ZombieFactory {
         float w = GameConfig.CELL_WIDTH * 0.7f;
         float h = GameConfig.CELL_HEIGHT * 0.9f;
 
-        if ("polevault".equals(zombieId) || "polevault".equals(zd.ability)) {
+        // PoleVault: nhan dien qua id, hoac qua su ton tai cua nhom "vault" trong JSON.
+        if ("polevault".equals(zombieId) || zd.vault != null) {
             return new PoleVaultZombie(zd, row, startX, cy, w, h);
         }
         return new Zombie(zd, row, startX, cy, w, h);
