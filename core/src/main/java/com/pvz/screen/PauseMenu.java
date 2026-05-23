@@ -91,12 +91,12 @@ public class PauseMenu {
 
         SaveManager.SettingsData s = SaveManager.get().settings();
 
-        if (hit(0)) { action = Action.RESUME; return; }
-        if (hit(1)) { AudioManager.get().setThemeOn(!s.themeMusicOn); return; }
-        if (hit(2)) { AudioManager.get().setClickOn(!s.clickSoundOn); return; }
-        if (hit(3)) { AudioManager.get().setGameSoundOn(!s.gameSoundOn); return; }
-        if (hit(4)) { action = Action.RESTART; return; }
-        if (hit(5)) { action = Action.MAIN_MENU; return; }
+        if (hit(0)) { AudioManager.get().playClick(); action = Action.RESUME; return; }
+        if (hit(1)) { AudioManager.get().setThemeOn(!s.themeMusicOn); AudioManager.get().playClick(); return; }
+        if (hit(2)) { AudioManager.get().setClickOn(!s.clickSoundOn); AudioManager.get().playClick(); return; }
+        if (hit(3)) { AudioManager.get().setGameSoundOn(!s.gameSoundOn); AudioManager.get().playClick(); return; }
+        if (hit(4)) { AudioManager.get().playClick(); action = Action.RESTART; return; }
+        if (hit(5)) { AudioManager.get().playClick(); action = Action.MAIN_MENU; return; }
     }
 
     private boolean hit(int i) {
