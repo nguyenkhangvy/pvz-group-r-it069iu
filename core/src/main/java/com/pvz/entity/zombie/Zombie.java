@@ -80,6 +80,19 @@ public class Zombie extends Entity {
         this.slowTimer = duration;
     }
 
+    /**
+     * Override kill(): phat tieng zombie chet MOT LAN, bat ke nguon giet la gi
+     * (pea, chomper, cherry bomb, potato mine, lawn mower...). Dung co diedSoundPlayed
+     * de khong phat lap neu kill() bi goi nhieu lan.
+     */
+    @Override
+    public void kill() {
+        if (!alive) return;            // da chet roi, bo qua
+        super.kill();
+        com.pvz.manager.AudioManager.get().playGameSound(
+            com.pvz.manager.AudioManager.ZOMBIE_DIE, 0.7f);
+    }
+
     @Override
     public void draw(SpriteBatch batch) {
         TextureRegion frame = anim.getFrame();
