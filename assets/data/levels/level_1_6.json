@@ -3,19 +3,101 @@
   "maxPlants": 6,
   "sunFallInterval": 8,
   "sunFallAmount": 25,
-  "progressDuration": 120,
+  "progressDuration": 102,
   "unlockPlant": "snowpea",
   "unlockZombie": "polevault",
   "unlockFeature": null,
   "waves": [
-    { "time": 8,   "zombieId": "basic",     "count": 3, "rows": [0,2,4], "huge": false },
-    { "time": 24,  "zombieId": "polevault", "count": 1, "rows": [2], "huge": false },
-    { "time": 42,  "zombieId": "conehead",  "count": 2, "rows": [1,3], "huge": false },
-    { "time": 62,  "zombieId": "polevault", "count": 2, "rows": [0,4], "huge": false },
-    { "time": 82,  "zombieId": "basic",     "count": 3, "rows": [1,2,3], "huge": false },
-    { "time": 100, "zombieId": "flag",      "count": 1, "rows": [2], "huge": true },
-    { "time": 101, "zombieId": "polevault", "count": 2, "rows": [1,3], "huge": true },
-    { "time": 102, "zombieId": "conehead",  "count": 3, "rows": [0,2,4], "huge": true }
+    {
+      "time": 8,
+      "zombieId": "basic",
+      "count": 3,
+      "rows": [
+        0,
+        2,
+        4
+      ],
+      "huge": false
+    },
+    {
+      "time": 24,
+      "zombieId": "polevault",
+      "count": 1,
+      "rows": [
+        2
+      ],
+      "huge": false
+    },
+    {
+      "time": 42,
+      "zombieId": "conehead",
+      "count": 2,
+      "rows": [
+        1,
+        3
+      ],
+      "huge": false
+    },
+    {
+      "time": 62,
+      "zombieId": "polevault",
+      "count": 2,
+      "rows": [
+        0,
+        4
+      ],
+      "huge": false
+    },
+    {
+      "time": 82,
+      "zombieId": "basic",
+      "count": 3,
+      "rows": [
+        1,
+        2,
+        3
+      ],
+      "huge": false
+    },
+    {
+      "time": 100,
+      "zombieId": "flag",
+      "count": 1,
+      "rows": [
+        2
+      ],
+      "huge": true
+    },
+    {
+      "time": 101,
+      "zombieId": "polevault",
+      "count": 2,
+      "rows": [
+        1,
+        3
+      ],
+      "huge": true
+    },
+    {
+      "time": 102,
+      "zombieId": "conehead",
+      "count": 3,
+      "rows": [
+        0,
+        2,
+        4
+      ],
+      "huge": true
+    }
   ],
-  "hugeWaveTimes": [100]
+  "hugeWaveTimes": [
+    100
+  ],
+  "activeRows": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ]
 }
