@@ -2,7 +2,9 @@ package com.pvz.entity;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pvz.util.DebugDraw;
+import com.pvz.manager.AssetProvider;
 import com.pvz.core.GameConfig;
 
 /**
@@ -42,7 +44,13 @@ public class Sun extends Entity {
 
     @Override
     public void draw(SpriteBatch batch) {
-        // TODO: sprite sun
+        TextureRegion frame = AssetProvider.get().region("sun");
+        if (frame != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
+        } else {
+            drawDebug(batch);
+        }
     }
 
     @Override

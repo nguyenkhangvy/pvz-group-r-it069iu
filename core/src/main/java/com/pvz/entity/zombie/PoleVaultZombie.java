@@ -51,7 +51,7 @@ public class PoleVaultZombie extends Zombie {
 
         // di chuyen binh thuong (truoc nhay dung speed; sau nhay dung speedAfterVault)
         if (state == State.WALKING) {
-            float spd = hasVaulted && data.speedAfterVault > 0 ? data.speedAfterVault : data.speed;
+            float spd = (hasVaulted && data.vault != null && data.vault.speedAfterVault > 0) ? data.vault.speedAfterVault : data.speed;
             x -= spd * slowFactor * delta;
         } else if (state == State.EATING) {
             eatTimer += delta;

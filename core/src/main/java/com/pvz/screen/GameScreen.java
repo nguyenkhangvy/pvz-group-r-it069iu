@@ -13,6 +13,8 @@ import com.pvz.entity.LawnMower;
 import com.pvz.entity.Sun;
 import com.pvz.entity.plant.Plant;
 import com.pvz.entity.plant.PlantContext;
+import com.pvz.entity.plant.ShooterPlant;
+import com.pvz.entity.plant.SunflowerPlant;
 import com.pvz.entity.projectile.Projectile;
 import com.pvz.entity.zombie.Zombie;
 import com.pvz.entity.zombie.PoleVaultZombie;
@@ -21,11 +23,10 @@ import com.pvz.factory.ProjectileFactory;
 import com.pvz.factory.ZombieFactory;
 import com.pvz.manager.DataManager;
 import com.pvz.manager.ScreenManager;
+import com.pvz.manager.AudioManager;
 import com.pvz.system.GridSystem;
 import com.pvz.util.DebugDraw;
 import com.pvz.system.WaveSystem;
-import com.pvz.manager.AudioManager;
-import com.pvz.manager.SoundKeys;
 
 /**
  * GameScreen: man choi chinh.
@@ -148,6 +149,8 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
         font = new com.badlogic.gdx.graphics.g2d.BitmapFont();
         pauseMenu = new PauseMenu(font);
+
+        AudioManager.get().playTheme(AudioManager.THEME); // nhac nen man choi
     }
 
     private void spawnMowers() {
@@ -181,11 +184,13 @@ public class GameScreen extends BaseScreen implements PlantContext {
                 case RESTART:
                     pauseMenu.reset();
                     markSwitched();
+                    AudioManager.get().stopTheme();
                     ScreenManager.get().setScreen(new ChoosePlantScreen(level));
                     return;
                 case MAIN_MENU:
                     pauseMenu.reset();
                     markSwitched();
+                    AudioManager.get().stopTheme();
                     ScreenManager.get().setScreen(new StartupScreen());
                     return;
                 default:
@@ -237,8 +242,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
         // P = pause/resume (mo menu giua game)
         if (Gdx.input.isKeyJustPressed(Input.Keys.P) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             paused = !paused;
-            if (paused){ pauseMenu.reset();
-                 AudioManager.get().playGameSound(SoundKeys.GAMEPLAY_PAUSE);
+            if (paused) pauseMenu.reset();
         }
         // S = speed 2x (chi khi da unlock o level 4)
         if (Gdx.input.isKeyJustPressed(Input.Keys.S) && level >= GameConfig.SPEED_UNLOCK_LEVEL) {
@@ -307,6 +311,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
             for (Sun s : suns) {
                 if (s.isAlive() && s.contains(touch.x, touch.y)) {
                     sun += s.getValue();
+                    AudioManager.get().playGameSound(AudioManager.SUN_PICK);
                     s.kill();
                     return;
                 }
@@ -323,8 +328,8 @@ public class GameScreen extends BaseScreen implements PlantContext {
                 if (p != null && sun >= p.getData().cost) {
                     sun -= p.getData().cost;
                     plantGrid[row][col] = p;
+                    AudioManager.get().playGameSound(AudioManager.PLANT);
                     plants.add(p);
-                    AudioManager.get().playGameSound(SoundKeys.PEASHOOTER_PLANT);
                     cardCooldown.put(selectedPlant, p.getData().cooldown); // bat dau hoi chieu
                 }
                 // dat xong (hoac that bai) -> nha cay, muon dat tiep phai bam the lai
@@ -364,20 +369,30 @@ public class GameScreen extends BaseScreen implements PlantContext {
             p.updateWithContext(d, this);
             if (!p.isAlive()) continue; // co the da chet/bien mat sau update (cherry/potato)
 
-            // ban dan: chi ban khi la cay ban va co zombie cung hang phia phai
-            if (p.isShooter() && zombieInRow(p.getRow()) && p.canAttack()) {
-                int shots = Math.max(1, p.getData().projectilePerShot);
-                for (int s = 0; s < shots; s++) {
-                    // Repeater: 2 pea cach nhau mot chut theo x de khong chong khit
-                    Projectile proj = projectileFactory.create(
-                        p.getData().projectileType, p.getRow(),
-                        p.getX() + p.getWidth() / 2f + s * 18f, p.getY());
-                    if (proj != null) projectiles.add(proj);
+            // cay BAN: chi xu ly cho ShooterPlant
+            if (p instanceof ShooterPlant) {
+                ShooterPlant shooter = (ShooterPlant) p;
+                if (zombieInRow(p.getRow()) && shooter.canAttack()) {
+                    p.playShootAnim();
+                    AudioManager.get().playGameSound(AudioManager.SHOOT, 0.6f);
+                    int shots = shooter.getProjectilePerShot();
+                    for (int s = 0; s < shots; s++) {
+                        // Repeater: 2 pea cach nhau mot chut theo x de khong chong khit
+                        Projectile proj = projectileFactory.create(
+                            shooter.getProjectileType(), p.getRow(),
+                            p.getX() + p.getWidth() / 2f + s * 18f, p.getY());
+                        if (proj != null) projectiles.add(proj);
+                    }
                 }
             }
-            // san xuat sun
-            if (p.canProduceSun()) {
-                suns.add(new Sun(p.getData().sunAmount, p.getX(), p.getY() + 30, p.getY(), 36f));
+
+            // cay SAN SUN: chi xu ly cho SunflowerPlant
+            if (p instanceof SunflowerPlant) {
+                SunflowerPlant sf = (SunflowerPlant) p;
+                if (sf.canProduceSun()) {
+                    p.playSpecialAnim();
+                    suns.add(new Sun(sf.getSunAmount(), p.getX(), p.getY() + 30, p.getY(), 36f));
+                }
             }
         }
     }
@@ -412,6 +427,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
                 z.update(d);
                 if (z.canEatBite()) {
                     blocking.takeDamage(z.getData().damage);
+                    AudioManager.get().playGameSound(AudioManager.ZOMBIE_EAT, 0.5f);
                     if (!blocking.isAlive()) {
                         plantGrid[z.getRow()][col] = null;
                     }
@@ -464,7 +480,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
             }
             if (target != null) {
                 target.takeDamage(p.getData().damage);
-                if (p.getData().slows) target.applySlow(p.getData().slowFactor, p.getData().slowDuration);
+                if (p.getData().slows()) target.applySlow(p.getData().slow.factor, p.getData().slow.duration);
                 p.kill();
             }
         }
@@ -476,6 +492,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
                 LawnMower m = mowerAt(z.getRow());
                 if (m != null && m.isReady()) {
                     m.trigger();           // kich hoat mower phong thu
+                    AudioManager.get().playGameSound(AudioManager.MOWER);
                 } else if (m != null && m.isRunning()) {
                     // mower dang chay se giet zombie nay ngay sau day -> chua thua
                 } else {
@@ -509,15 +526,17 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
     private void win() {
         ended = true;
-        AudioManager.get().playMusic(SoundKeys.WIN_MUSIC, false);
         markSwitched();
+        AudioManager.get().stopTheme();
+        AudioManager.get().playGameSound(AudioManager.WIN);
         ScreenManager.get().setScreen(new WinScreen(level));
     }
 
     private void lose() {
         ended = true;
-        AudioManager.get().playMusic(SoundKeys.LOSE_MUSIC, false);
         markSwitched();
+        AudioManager.get().stopTheme();
+        AudioManager.get().playGameSound(AudioManager.LOSE);
         ScreenManager.get().setScreen(new LoseScreen(level));
     }
 
@@ -584,11 +603,11 @@ public class GameScreen extends BaseScreen implements PlantContext {
         }
 
         // --- entity ---
-        for (LawnMower m : mowers) if (m.isAlive()) m.drawDebug(batch);
-        for (Plant p : plants) if (p.isAlive()) p.drawDebug(batch);
-        for (Zombie z : zombies) if (z.isAlive()) z.drawDebug(batch);
-        for (Projectile p : projectiles) if (p.isAlive()) p.drawDebug(batch);
-        for (Sun s : suns) if (s.isAlive()) s.drawDebug(batch);
+        for (LawnMower m : mowers) if (m.isAlive()) m.draw(batch);
+        for (Plant p : plants) if (p.isAlive()) p.draw(batch);
+        for (Zombie z : zombies) if (z.isAlive()) z.draw(batch);
+        for (Projectile p : projectiles) if (p.isAlive()) p.draw(batch);
+        for (Sun s : suns) if (s.isAlive()) s.draw(batch);
 
         // --- preview o dat cay khi dang cam cay ---
         drawPlacementPreview(dd);

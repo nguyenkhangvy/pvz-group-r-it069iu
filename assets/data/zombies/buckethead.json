@@ -1,12 +1,20 @@
 {
-  "id": "buckethead",
-  "displayName": "Buckethead Zombie",
-  "hp": 1290,
-  "speed": 21.3,
-  "damage": 100,
+  "hp": 1300,
+  "speed": 22,
+  "damage": 20,
   "eatInterval": 1.0,
-  "ability": null,
-  "vaultSpeedBonus": 0,
-  "speedAfterVault": 0,
-  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+  "animations": {
+    "walking": [
+      "buckethead_walk_0",
+      "buckethead_walk_1"
+    ],
+    "eating": [
+      "buckethead_eat_0",
+      "buckethead_eat_1"
+    ],
+    "dying": [
+      "buckethead_die"
+    ],
+    "special": []
+  }
 }

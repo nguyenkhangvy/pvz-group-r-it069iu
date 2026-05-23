@@ -2,7 +2,9 @@ package com.pvz.entity;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pvz.util.DebugDraw;
+import com.pvz.manager.AssetProvider;
 
 /**
  * LawnMower: la ENTITY (theo yeu cau). Phong thu cuoi cung moi hang (1 cai/hang).
@@ -43,7 +45,13 @@ public class LawnMower extends Entity {
 
     @Override
     public void draw(SpriteBatch batch) {
-        // TODO: sprite may xen co
+        TextureRegion frame = AssetProvider.get().region("lawnmower");
+        if (frame != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
+        } else {
+            drawDebug(batch);
+        }
     }
 
     @Override

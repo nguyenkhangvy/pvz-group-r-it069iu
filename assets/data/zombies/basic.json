@@ -1,12 +1,20 @@
 {
-  "id": "basic",
-  "displayName": "Basic Zombie",
-  "hp": 190,
-  "speed": 21.3,
-  "damage": 100,
+  "hp": 200,
+  "speed": 22,
+  "damage": 20,
   "eatInterval": 1.0,
-  "ability": null,
-  "vaultSpeedBonus": 0,
-  "speedAfterVault": 0,
-  "animations": { "walking": [], "eating": [], "dying": [], "special": [] }
+  "animations": {
+    "walking": [
+      "basic_walk_0",
+      "basic_walk_1"
+    ],
+    "eating": [
+      "basic_eat_0",
+      "basic_eat_1"
+    ],
+    "dying": [
+      "basic_die"
+    ],
+    "special": []
+  }
 }

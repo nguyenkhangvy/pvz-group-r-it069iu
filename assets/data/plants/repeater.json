@@ -1,22 +1,22 @@
 {
-  "id": "repeater",
-  "displayName": "Repeater",
   "hp": 300,
   "cost": 200,
-  "cooldown": 7.5,
-  "damage": 20,
-  "attackInterval": 1.5,
-  "range": 0,
-  "sunInterval": 0,
-  "sunAmount": 0,
-  "projectileType": "pea",
-  "projectilePerShot": 2,
-  "armTime": 0,
-  "explodeDelay": 0,
-  "explodeRadius": 0,
-  "explodeDamage": 0,
-  "chewTime": 0,
-  "chompDamage": 0,
-  "blocksZombie": false,
-  "animations": { "idle": [], "shooting": [], "eating": [], "special": [] }
+  "cooldown": 5,
+  "shoot": {
+    "attackInterval": 1.5,
+    "projectileType": "pea",
+    "projectilePerShot": 2
+  },
+  "animations": {
+    "idle": [
+      "repeater_idle_0",
+      "repeater_idle_1"
+    ],
+    "shooting": [
+      "repeater_shoot_0",
+      "repeater_shoot_1"
+    ],
+    "eating": [],
+    "special": []
+  }
 }
