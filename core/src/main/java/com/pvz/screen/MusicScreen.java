@@ -1,16 +1,19 @@
 package com.pvz.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.pvz.manager.AudioManager;
 import com.pvz.manager.SaveManager;
+import com.pvz.core.GameConfig;
 import com.pvz.manager.ScreenManager;
+import com.pvz.util.DebugDraw;
 
 /**
  * MusicScreen: bat/tat 3 loai am thanh (theme, click, game sound).
@@ -19,11 +22,11 @@ import com.pvz.manager.ScreenManager;
 public class MusicScreen extends BaseScreen {
 
     private final Stage stage;
-    private final Skin skin;
+    
 
     public MusicScreen() {
         stage = new Stage(viewport, batch);
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        
         Gdx.input.setInputProcessor(stage);
         build();
     }
@@ -34,9 +37,9 @@ public class MusicScreen extends BaseScreen {
         root.setFillParent(true);
         root.center();
 
-        final CheckBox theme = new CheckBox(" Theme Music", skin);
-        final CheckBox click = new CheckBox(" Click Sound", skin);
-        final CheckBox gameS = new CheckBox(" Game Sound", skin);
+        final CheckBox theme = new CheckBox(" Theme Music", UiAssets.skin());
+        final CheckBox click = new CheckBox(" Click Sound", UiAssets.skin());
+        final CheckBox gameS = new CheckBox(" Game Sound", UiAssets.skin());
         theme.setChecked(s.themeMusicOn);
         click.setChecked(s.clickSoundOn);
         gameS.setChecked(s.gameSoundOn);
@@ -51,7 +54,7 @@ public class MusicScreen extends BaseScreen {
             @Override public void changed(ChangeEvent e, Actor a) { AudioManager.get().setGameSoundOn(gameS.isChecked()); }
         });
 
-        TextButton back = new TextButton("Back", skin);
+        TextButton back = new TextButton("Back", UiAssets.skin());
         back.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) { ScreenManager.get().setScreen(new StartupScreen()); }
         });
@@ -64,6 +67,12 @@ public class MusicScreen extends BaseScreen {
     }
 
     @Override protected void update(float delta) { stage.act(delta); }
-    @Override protected void draw() { stage.draw(); }
-    @Override public void dispose() { super.dispose(); stage.dispose(); skin.dispose(); }
+    @Override protected void draw() {
+        DebugDraw dd = DebugDraw.get();
+        batch.begin();
+        dd.rect(batch, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT, new Color(0.10f, 0.25f, 0.06f, 1f));
+        batch.end();
+        stage.draw();
+    }
+    @Override public void dispose() { super.dispose(); stage.dispose();  }
 }

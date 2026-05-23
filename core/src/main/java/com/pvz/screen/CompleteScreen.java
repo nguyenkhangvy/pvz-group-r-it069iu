@@ -1,14 +1,17 @@
 package com.pvz.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.pvz.core.GameConfig;
 import com.pvz.manager.ScreenManager;
+import com.pvz.util.DebugDraw;
 
 /**
  * CompleteScreen: khi nguoi choi hoan thanh TAT CA level.
@@ -18,11 +21,11 @@ import com.pvz.manager.ScreenManager;
 public class CompleteScreen extends BaseScreen {
 
     private final Stage stage;
-    private final Skin skin;
+    
 
     public CompleteScreen() {
         stage = new Stage(viewport, batch);
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        
         Gdx.input.setInputProcessor(stage);
         build();
     }
@@ -31,11 +34,11 @@ public class CompleteScreen extends BaseScreen {
         Table root = new Table();
         root.setFillParent(true);
         root.center();
-        root.add(new Label("CONGRATULATIONS!", skin)).padBottom(15).row();
-        root.add(new Label("You completed all levels.", skin)).padBottom(10).row();
-        root.add(new Label("Coming soon: more plants, zombies & night levels!", skin)).padBottom(25).row();
+        root.add(new Label("CONGRATULATIONS!", UiAssets.skin())).padBottom(15).row();
+        root.add(new Label("You completed all levels.", UiAssets.skin())).padBottom(10).row();
+        root.add(new Label("Coming soon: more plants, zombies & night levels!", UiAssets.skin())).padBottom(25).row();
 
-        TextButton next = new TextButton("Back to Menu", skin);
+        TextButton next = new TextButton("Back to Menu", UiAssets.skin());
         next.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
                 ScreenManager.get().setScreen(new StartupScreen());
@@ -46,6 +49,12 @@ public class CompleteScreen extends BaseScreen {
     }
 
     @Override protected void update(float delta) { stage.act(delta); }
-    @Override protected void draw() { stage.draw(); }
-    @Override public void dispose() { super.dispose(); stage.dispose(); skin.dispose(); }
+    @Override protected void draw() {
+        DebugDraw dd = DebugDraw.get();
+        batch.begin();
+        dd.rect(batch, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT, new Color(0.08f, 0.20f, 0.04f, 1f));
+        batch.end();
+        stage.draw();
+    }
+    @Override public void dispose() { super.dispose(); stage.dispose();  }
 }

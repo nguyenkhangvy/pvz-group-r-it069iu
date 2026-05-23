@@ -1,17 +1,20 @@
 package com.pvz.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.pvz.data.LevelData;
 import com.pvz.manager.DataManager;
+import com.pvz.core.GameConfig;
 import com.pvz.manager.ScreenManager;
+import com.pvz.util.DebugDraw;
 import com.pvz.system.PlantUnlockSystem;
 
 /**
@@ -25,7 +28,7 @@ public class ChoosePlantScreen extends BaseScreen {
 
     private final int level;
     private final Stage stage;
-    private final Skin skin;
+    
     private final Array<String> chosen = new Array<>();
     private final int maxPlants;
     private Label counter;
@@ -35,7 +38,7 @@ public class ChoosePlantScreen extends BaseScreen {
         LevelData ld = DataManager.get().level(level);
         this.maxPlants = (ld != null && ld.maxPlants > 0) ? ld.maxPlants : 6;
         stage = new Stage(viewport, batch);
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+        
         Gdx.input.setInputProcessor(stage);
         build();
     }
@@ -45,17 +48,17 @@ public class ChoosePlantScreen extends BaseScreen {
         root.setFillParent(true);
         root.center();
 
-        root.add(new Label("Level 1-" + level + " : Choose Plants", skin)).padBottom(8).row();
-        counter = new Label("", skin);
+        root.add(new Label("Level 1-" + level + " : Choose Plants", UiAssets.skin())).padBottom(8).row();
+        counter = new Label("", UiAssets.skin());
         updateCounter();
         root.add(counter).padBottom(16).row();
 
         Array<String> available = PlantUnlockSystem.getUnlockedPlants(level);
         if (available.size == 0) {
-            root.add(new Label("(Chua co data cay - se hien sau khi them JSON)", skin)).padBottom(20).row();
+            root.add(new Label("(Chua co data cay - se hien sau khi them JSON)", UiAssets.skin())).padBottom(20).row();
         }
         for (final String plantId : available) {
-            final TextButton b = new TextButton(plantId, skin);
+            final TextButton b = new TextButton(plantId, UiAssets.skin());
             b.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent e, Actor a) {
                     if (chosen.contains(plantId, false)) {
@@ -74,14 +77,14 @@ public class ChoosePlantScreen extends BaseScreen {
             root.add(b).width(220).height(45).padBottom(8).row();
         }
 
-        TextButton start = new TextButton("Start Battle", skin);
+        TextButton start = new TextButton("Start Battle", UiAssets.skin());
         start.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
                 ScreenManager.get().setScreen(new GameScreen(level, chosen));
             }
         });
 
-        TextButton back = new TextButton("Back", skin);
+        TextButton back = new TextButton("Back", UiAssets.skin());
         back.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
                 ScreenManager.get().setScreen(new StartupScreen());
@@ -98,6 +101,12 @@ public class ChoosePlantScreen extends BaseScreen {
     }
 
     @Override protected void update(float delta) { stage.act(delta); }
-    @Override protected void draw() { stage.draw(); }
-    @Override public void dispose() { super.dispose(); stage.dispose(); skin.dispose(); }
+    @Override protected void draw() {
+        DebugDraw dd = DebugDraw.get();
+        batch.begin();
+        dd.rect(batch, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT, new Color(0.12f, 0.30f, 0.07f, 1f));
+        batch.end();
+        stage.draw();
+    }
+    @Override public void dispose() { super.dispose(); stage.dispose();  }
 }
