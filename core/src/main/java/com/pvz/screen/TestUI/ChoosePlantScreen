@@ -37,22 +37,18 @@ public class ChoosePlantScreen extends BaseScreen {
     }
 
     private void build() {
-        // Panel chinh giua man hinh
         Table root = new Table();
         root.setFillParent(true);
         root.center();
 
-        // Tieu de
         Label title = new Label("Level 1-" + level + "  –  Choose Your Plants", UiAssets.skin(), "window");
         title.setColor(HEADER_CLR);
         root.add(title).padBottom(12).row();
 
-        // Counter selected/max
         counter = new Label("", UiAssets.skin(), "subtitle");
         updateCounter();
         root.add(counter).padBottom(20).row();
 
-        // Danh sach cay
         Table cardTable = new Table();
         Array<String> available = PlantUnlockSystem.getUnlockedPlants(level);
         if (available.size == 0) {
@@ -86,7 +82,6 @@ public class ChoosePlantScreen extends BaseScreen {
         scroll.setFadeScrollBars(false);
         root.add(scroll).width(560).height(320).padBottom(20).row();
 
-        // Nut Start va Back
         Table btnRow = new Table();
         TextButton start = new TextButton("Start Battle!", UiAssets.skin(), "sun");
         TextButton back  = new TextButton("Back",          UiAssets.skin());
