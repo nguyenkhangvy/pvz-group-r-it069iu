@@ -1,0 +1,133 @@
+package com.pvz.screen;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Array;
+import com.pvz.data.LevelData;
+import com.pvz.manager.DataManager;
+import com.pvz.manager.ScreenManager;
+import com.pvz.system.PlantUnlockSystem;
+import com.pvz.util.DebugDraw;
+
+/**
+ * ChoosePlantScreen: chon cay truoc khi vao tran.
+ * UI PvZ: nen xanh la, card cay mau vang, highlight khi chon.
+ */
+public class ChoosePlantScreen extends BaseScreen {
+
+    private final int level;
+    private final Stage stage;
+    private final Array<String> chosen = new Array<>();
+    private final int maxPlants;
+    private Label counter;
+
+    private static final Color BG          = new Color(0.12f, 0.30f, 0.07f, 1f);
+    private static final Color PANEL_BG    = new Color(0.08f, 0.18f, 0.04f, 0.92f);
+    private static final Color PANEL_BD    = new Color(0.55f, 0.80f, 0.25f, 1f);
+    private static final Color HEADER_CLR  = new Color(1.00f, 0.90f, 0.10f, 1f);
+
+    public ChoosePlantScreen(int level) {
+        this.level = level;
+        LevelData ld = DataManager.get().level(level);
+        this.maxPlants = (ld != null && ld.maxPlants > 0) ? ld.maxPlants : 6;
+        stage = new Stage(viewport, batch);
+        Gdx.input.setInputProcessor(stage);
+        build();
+    }
+
+    private void build() {
+        // Panel chinh giua man hinh
+        Table root = new Table();
+        root.setFillParent(true);
+        root.center();
+
+        // Tieu de
+        Label title = new Label("Level 1-" + level + "  –  Choose Your Plants", UiAssets.skin(), "window");
+        title.setColor(HEADER_CLR);
+        root.add(title).padBottom(12).row();
+
+        // Counter selected/max
+        counter = new Label("", UiAssets.skin(), "subtitle");
+        updateCounter();
+        root.add(counter).padBottom(20).row();
+
+        // Danh sach cay
+        Table cardTable = new Table();
+        Array<String> available = PlantUnlockSystem.getUnlockedPlants(level);
+        if (available.size == 0) {
+            cardTable.add(new Label("(Chua co data cay)", UiAssets.skin())).padBottom(20);
+        }
+        int col = 0;
+        for (final String plantId : available) {
+            final TextButton btn = new TextButton(plantId, UiAssets.skin(), "toggle");
+            btn.addListener(new ChangeListener() {
+                @Override public void changed(ChangeEvent e, Actor a) {
+                    if (chosen.contains(plantId, false)) {
+                        chosen.removeValue(plantId, false);
+                        btn.setChecked(false);
+                    } else {
+                        if (chosen.size >= maxPlants) {
+                            btn.setChecked(false);
+                            return;
+                        }
+                        chosen.add(plantId);
+                        btn.setChecked(true);
+                    }
+                    updateCounter();
+                }
+            });
+            cardTable.add(btn).width(160).height(55).pad(6);
+            col++;
+            if (col % 3 == 0) cardTable.row();
+        }
+
+        ScrollPane scroll = new ScrollPane(cardTable, UiAssets.skin());
+        scroll.setFadeScrollBars(false);
+        root.add(scroll).width(560).height(320).padBottom(20).row();
+
+        // Nut Start va Back
+        Table btnRow = new Table();
+        TextButton start = new TextButton("Start Battle!", UiAssets.skin(), "sun");
+        TextButton back  = new TextButton("Back",          UiAssets.skin());
+        start.addListener(new ChangeListener() {
+            @Override public void changed(ChangeEvent e, Actor a) {
+                ScreenManager.get().setScreen(new GameScreen(level, chosen));
+            }
+        });
+        back.addListener(new ChangeListener() {
+            @Override public void changed(ChangeEvent e, Actor a) {
+                ScreenManager.get().setScreen(new StartupScreen());
+            }
+        });
+        btnRow.add(back).width(180).height(60).padRight(20);
+        btnRow.add(start).width(220).height(60);
+        root.add(btnRow).row();
+
+        stage.addActor(root);
+    }
+
+    private void updateCounter() {
+        counter.setText("Selected: " + chosen.size + " / " + maxPlants
+            + (chosen.size >= maxPlants ? "  (Full!)" : ""));
+        counter.setColor(chosen.size >= maxPlants
+            ? new Color(1f, 0.85f, 0.1f, 1f)
+            : new Color(0.75f, 0.95f, 0.55f, 1f));
+    }
+
+    @Override protected void update(float delta) { stage.act(delta); }
+
+    @Override
+    protected void draw() {
+        DebugDraw dd = DebugDraw.get();
+        batch.begin();
+        dd.rect(batch, 0, 0, com.pvz.core.GameConfig.WORLD_WIDTH, com.pvz.core.GameConfig.WORLD_HEIGHT, BG);
+        batch.end();
+        stage.draw();
+    }
+
+    @Override public void dispose() { super.dispose(); stage.dispose(); }
+}
