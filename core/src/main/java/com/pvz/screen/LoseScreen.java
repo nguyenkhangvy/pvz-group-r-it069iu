@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.pvz.manager.SaveManager;
+import com.pvz.manager.AudioManager;
 import com.pvz.manager.ScreenManager;
 
 /**
@@ -40,12 +41,14 @@ public class LoseScreen extends BaseScreen {
         TextButton restart = new TextButton("Restart", skin);
         restart.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new ChoosePlantScreen(level));
             }
         });
         TextButton menu = new TextButton("Menu", skin);
         menu.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new StartupScreen());
             }
         });

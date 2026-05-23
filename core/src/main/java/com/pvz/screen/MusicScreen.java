@@ -42,18 +42,31 @@ public class MusicScreen extends BaseScreen {
         gameS.setChecked(s.gameSoundOn);
 
         theme.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) { AudioManager.get().setThemeOn(theme.isChecked()); }
+            @Override public void changed(ChangeEvent e, Actor a) {
+                AudioManager.get().setThemeOn(theme.isChecked());
+                AudioManager.get().playClick();
+            }
         });
         click.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) { AudioManager.get().setClickOn(click.isChecked()); }
+            @Override public void changed(ChangeEvent e, Actor a) {
+                // set TRUOC, roi phat de nguoi dung nghe phan hoi khi vua bat
+                AudioManager.get().setClickOn(click.isChecked());
+                AudioManager.get().playClick();
+            }
         });
         gameS.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) { AudioManager.get().setGameSoundOn(gameS.isChecked()); }
+            @Override public void changed(ChangeEvent e, Actor a) {
+                AudioManager.get().setGameSoundOn(gameS.isChecked());
+                AudioManager.get().playClick();
+            }
         });
 
         TextButton back = new TextButton("Back", skin);
         back.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) { ScreenManager.get().setScreen(new StartupScreen()); }
+            @Override public void changed(ChangeEvent e, Actor a) {
+                AudioManager.get().playClick();
+                ScreenManager.get().setScreen(new StartupScreen());
+            }
         });
 
         root.add(theme).left().padBottom(15).row();

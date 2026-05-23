@@ -56,6 +56,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
     private final ZombieFactory zombieFactory;
     private final ProjectileFactory projectileFactory;
     private final WaveSystem waveSystem;
+    private final com.pvz.system.LawnSystem lawnSystem;
 
     private final Plant[][] plantGrid = new Plant[GameConfig.GRID_ROWS][GameConfig.GRID_COLS];
     private final Array<Plant> plants = new Array<>();
@@ -111,6 +112,11 @@ public class GameScreen extends BaseScreen implements PlantContext {
     private static final Color GRID_COLOR = new Color(0.3f, 0.3f, 0.3f, 1f);
     private static final Color BAR_BG = new Color(0.3f, 0.3f, 0.3f, 1f);
     private static final Color BAR_FG = new Color(0.4f, 0.9f, 0.2f, 1f);
+    // cot moc tren progress bar
+    private static final Color MARKER_WAVE        = new Color(0.85f, 0.85f, 0.85f, 1f); // wave thuong (chua qua)
+    private static final Color MARKER_WAVE_PASSED = new Color(0.55f, 0.55f, 0.55f, 1f); // wave thuong (da qua)
+    private static final Color MARKER_HUGE        = new Color(0.90f, 0.20f, 0.15f, 1f); // huge wave (chua qua) - do
+    private static final Color MARKER_HUGE_PASSED = new Color(0.95f, 0.75f, 0.20f, 1f); // huge wave (da qua) - vang
     private static final Color CARD_BG = new Color(0.85f, 0.78f, 0.55f, 1f);
     private static final Color CARD_SEL = new Color(1f, 1f, 0.3f, 1f);
     private static final Color CARD_DISABLED = new Color(0.4f, 0.4f, 0.4f, 1f);
@@ -118,11 +124,9 @@ public class GameScreen extends BaseScreen implements PlantContext {
     private static final Color SUN_BG = new Color(0.2f, 0.18f, 0.10f, 1f);
     private static final Color SHOVEL_BG = new Color(0.55f, 0.40f, 0.25f, 1f);
     private static final Color SHOVEL_SEL = new Color(1f, 0.7f, 0.3f, 1f);
-    private static final Color SHOVEL_LOCKED = new Color(0.3f, 0.3f, 0.3f, 1f);
     private static final Color SETTING_BG = new Color(0.30f, 0.45f, 0.55f, 1f);
     private static final Color SPEED_BG = new Color(0.35f, 0.40f, 0.30f, 1f);
     private static final Color SPEED_ON = new Color(0.3f, 0.85f, 0.85f, 1f);
-    private static final Color SPEED_LOCKED = new Color(0.3f, 0.3f, 0.3f, 1f);
 
     public GameScreen(int level, Array<String> chosenPlants) {
         this.level = level;
@@ -133,6 +137,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
         this.levelData = DataManager.get().level(level);
         this.waveSystem = new WaveSystem(levelData, zombieFactory);
+        this.lawnSystem = new com.pvz.system.LawnSystem(levelData);
 
         clock.resetForNewLevel();
         spawnMowers();
@@ -149,13 +154,12 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
         font = new com.badlogic.gdx.graphics.g2d.BitmapFont();
         pauseMenu = new PauseMenu(font);
-
-        AudioManager.get().playTheme(AudioManager.THEME); // nhac nen man choi
     }
 
     private void spawnMowers() {
         float w = 60f, h = 70f;
         for (int r = 0; r < GameConfig.GRID_ROWS; r++) {
+            if (!lawnSystem.isRowActive(r)) continue; // chi hang active moi co may xen
             float x = grid.houseX() - 30f;
             float y = grid.rowToPixelY(r);
             mowers.add(new LawnMower(r, x, y, w, h));
@@ -184,13 +188,11 @@ public class GameScreen extends BaseScreen implements PlantContext {
                 case RESTART:
                     pauseMenu.reset();
                     markSwitched();
-                    AudioManager.get().stopTheme();
                     ScreenManager.get().setScreen(new ChoosePlantScreen(level));
                     return;
                 case MAIN_MENU:
                     pauseMenu.reset();
                     markSwitched();
-                    AudioManager.get().stopTheme();
                     ScreenManager.get().setScreen(new StartupScreen());
                     return;
                 default:
@@ -202,10 +204,20 @@ public class GameScreen extends BaseScreen implements PlantContext {
         if (ended) return;
 
         // --- WORLD cap nhat bang gameDelta ---
+        // Giai doan 1: co dang trai mo man. Cho phep nhat sun/cam the (handleWorldInput)
+        // nhung CHUA spawn zombie, CHUA roi sun tu troi cho den khi co trai xong.
+        lawnSystem.update(gameDelta);
+
         handleWorldInput();
         updateCardCooldown(gameDelta);
-        updateSkyFall(gameDelta);
-        waveSystem.update(gameDelta, this);
+
+        if (lawnSystem.isReady()) {
+            // Giai doan 2: co da trai xong -> tran bat dau binh thuong
+            battleTime += gameDelta; // dong ho tran (cung goc voi wave.time)
+            updateSkyFall(gameDelta);
+            waveSystem.update(gameDelta, this);
+        }
+
         updatePlants(gameDelta);
         updateZombies(gameDelta);
         updateProjectiles(gameDelta);
@@ -224,6 +236,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
     // sun roi tu troi theo interval (doc tu level JSON)
     private float skyFallTimer = 0f;
+    private float battleTime = 0f;   // dong ho tran (giay), bat dau khi co trai xong; trung goc voi wave.time
     private void updateSkyFall(float d) {
         float interval = (levelData != null && levelData.sunFallInterval > 0) ? levelData.sunFallInterval : 10f;
         int amount = (levelData != null && levelData.sunFallAmount > 0) ? levelData.sunFallAmount : 25;
@@ -320,7 +333,8 @@ public class GameScreen extends BaseScreen implements PlantContext {
             // 3) dat cay dang chon vao o
             int col = grid.pixelXToCol(touch.x);
             int row = grid.pixelYToRow(touch.y);
-            if (grid.isValidCell(row, col) && plantGrid[row][col] == null && selectedPlant != null) {
+            if (grid.isValidCell(row, col) && lawnSystem.isPlantable(row, col)
+                    && plantGrid[row][col] == null && selectedPlant != null) {
                 // kiem tra cooldown the
                 float cd = cardCooldown.get(selectedPlant, 0f);
                 if (cd > 0f) { selectedPlant = null; return; } // dang hoi chieu -> nha cay
@@ -418,6 +432,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
                     // nhay qua: ha canh o ben TRAI cua cay (col - 1)
                     float landingX = grid.colToPixelX(Math.max(0, col - 1));
                     pv.startVault(landingX);
+                    AudioManager.get().playGameSound(AudioManager.VAULT, 0.8f); // tieng nhay qua cay
                     continue;
                 }
             }
@@ -429,6 +444,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
                     blocking.takeDamage(z.getData().damage);
                     AudioManager.get().playGameSound(AudioManager.ZOMBIE_EAT, 0.5f);
                     if (!blocking.isAlive()) {
+                        AudioManager.get().playGameSound(AudioManager.GULP, 0.7f); // nuot khi cay ve 0 hp
                         plantGrid[z.getRow()][col] = null;
                     }
                 }
@@ -480,6 +496,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
             }
             if (target != null) {
                 target.takeDamage(p.getData().damage);
+                AudioManager.get().playGameSound(AudioManager.HIT_ZOMBIE, 0.6f); // pea trung zombie
                 if (p.getData().slows()) target.applySlow(p.getData().slow.factor, p.getData().slow.duration);
                 p.kill();
             }
@@ -518,6 +535,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
     private void checkWinLose() {
         if (ended) return;
+        if (!lawnSystem.isReady()) return; // co chua trai xong -> tran chua bat dau
         // WIN: tat ca wave da spawn xong VA khong con zombie song
         if (waveSystem.isFinished() && zombies.size == 0) {
             win();
@@ -527,7 +545,6 @@ public class GameScreen extends BaseScreen implements PlantContext {
     private void win() {
         ended = true;
         markSwitched();
-        AudioManager.get().stopTheme();
         AudioManager.get().playGameSound(AudioManager.WIN);
         ScreenManager.get().setScreen(new WinScreen(level));
     }
@@ -535,7 +552,6 @@ public class GameScreen extends BaseScreen implements PlantContext {
     private void lose() {
         ended = true;
         markSwitched();
-        AudioManager.get().stopTheme();
         AudioManager.get().playGameSound(AudioManager.LOSE);
         ScreenManager.get().setScreen(new LoseScreen(level));
     }
@@ -582,6 +598,7 @@ public class GameScreen extends BaseScreen implements PlantContext {
             plantGrid[r][c] = null;
         }
         plant.kill();
+        AudioManager.get().playGameSound(AudioManager.SHOVEL); // tieng xen khi go cay
     }
 
     // ===================== DRAW =====================
@@ -590,17 +607,11 @@ public class GameScreen extends BaseScreen implements PlantContext {
         DebugDraw dd = DebugDraw.get();
         batch.begin();
 
-        // --- luoi ---
-        for (int r = 0; r <= GameConfig.GRID_ROWS; r++) {
-            float y = GameConfig.LAWN_Y + r * GameConfig.CELL_HEIGHT;
-            dd.hLine(batch, GameConfig.LAWN_X, y,
-                GameConfig.GRID_COLS * GameConfig.CELL_WIDTH, 2f, GRID_COLOR);
-        }
-        for (int c = 0; c <= GameConfig.GRID_COLS; c++) {
-            float x = GameConfig.LAWN_X + c * GameConfig.CELL_WIDTH;
-            dd.vLine(batch, x, GameConfig.LAWN_Y,
-                GameConfig.GRID_ROWS * GameConfig.CELL_HEIGHT, 2f, GRID_COLOR);
-        }
+        // --- san co (ve truoc lam nen; chi ve phan da trai toi, hang active) ---
+        lawnSystem.draw(batch);
+
+        // --- luoi (chi ve o hang active) ---
+        drawGrid(dd);
 
         // --- entity ---
         for (LawnMower m : mowers) if (m.isAlive()) m.draw(batch);
@@ -642,32 +653,46 @@ public class GameScreen extends BaseScreen implements PlantContext {
         }
     }
 
-    /** O SHOVEL (ke sau card). Khoa neu chua unlock (level < 3). */
-    private void drawShovel(DebugDraw dd) {
-        float sx = shovelX();
-        boolean unlocked = level >= GameConfig.SHOVEL_UNLOCK_LEVEL;
-        Color bg = !unlocked ? SHOVEL_LOCKED : (shovelSelected ? SHOVEL_SEL : SHOVEL_BG);
-        dd.rect(batch, sx, TOP_Y, SHOVEL_W, HUD_H, bg);
-        if (font != null) {
-            font.setColor(unlocked ? 1f : 0.6f, unlocked ? 1f : 0.6f, unlocked ? 1f : 0.6f, 1f);
-            font.draw(batch, unlocked ? "Shovel" : "Lock", sx + 8, TOP_Y + HUD_H / 2f + 6f);
+    /** Ve luoi chi tren cac hang ACTIVE (hang khong dung thi de trong). */
+    private void drawGrid(DebugDraw dd) {
+        for (int r = 0; r < GameConfig.GRID_ROWS; r++) {
+            if (!lawnSystem.isRowActive(r)) continue;
+            float yBottom = GameConfig.LAWN_Y + r * GameConfig.CELL_HEIGHT;
+            float yTop = yBottom + GameConfig.CELL_HEIGHT;
+            // 2 duong ngang (tren + duoi cua hang)
+            dd.hLine(batch, GameConfig.LAWN_X, yBottom,
+                GameConfig.GRID_COLS * GameConfig.CELL_WIDTH, 2f, GRID_COLOR);
+            dd.hLine(batch, GameConfig.LAWN_X, yTop,
+                GameConfig.GRID_COLS * GameConfig.CELL_WIDTH, 2f, GRID_COLOR);
+            // cac duong doc trong hang nay
+            for (int c = 0; c <= GameConfig.GRID_COLS; c++) {
+                float x = GameConfig.LAWN_X + c * GameConfig.CELL_WIDTH;
+                dd.vLine(batch, x, yBottom, GameConfig.CELL_HEIGHT, 2f, GRID_COLOR);
+            }
         }
     }
 
-    /** Nut SPEED (1x/2x). Khoa neu chua unlock (level < 4). */
+    /** O SHOVEL (ke sau card). An hoan toan neu chua unlock (level < 3). */
+    private void drawShovel(DebugDraw dd) {
+        if (level < GameConfig.SHOVEL_UNLOCK_LEVEL) return; // chua mo -> khong ve gi
+        float sx = shovelX();
+        Color bg = shovelSelected ? SHOVEL_SEL : SHOVEL_BG;
+        dd.rect(batch, sx, TOP_Y, SHOVEL_W, HUD_H, bg);
+        if (font != null) {
+            font.setColor(1f, 1f, 1f, 1f);
+            font.draw(batch, "Shovel", sx + 8, TOP_Y + HUD_H / 2f + 6f);
+        }
+    }
+
+    /** Nut SPEED (1x/2x). An hoan toan neu chua unlock (level < 4). */
     private void drawSpeedButton(DebugDraw dd) {
-        boolean unlocked = level >= GameConfig.SPEED_UNLOCK_LEVEL;
+        if (level < GameConfig.SPEED_UNLOCK_LEVEL) return; // chua mo -> khong ve gi
         boolean on = clock.isSpeed2x();
-        Color bg = !unlocked ? SPEED_LOCKED : (on ? SPEED_ON : SPEED_BG);
+        Color bg = on ? SPEED_ON : SPEED_BG;
         dd.rect(batch, SPEED_X, TOP_Y, SPEED_W, HUD_H, bg);
         if (font != null) {
-            if (!unlocked) {
-                font.setColor(0.6f, 0.6f, 0.6f, 1f);
-                font.draw(batch, "Lock", SPEED_X + 14, TOP_Y + HUD_H / 2f + 6f);
-            } else {
-                font.setColor(0f, 0f, 0f, 1f);
-                font.draw(batch, on ? "2x" : "1x", SPEED_X + 24, TOP_Y + HUD_H / 2f + 6f);
-            }
+            font.setColor(0f, 0f, 0f, 1f);
+            font.draw(batch, on ? "2x" : "1x", SPEED_X + 24, TOP_Y + HUD_H / 2f + 6f);
         }
     }
 
@@ -733,16 +758,49 @@ public class GameScreen extends BaseScreen implements PlantContext {
 
     private void drawProgressBar(DebugDraw dd) {
         float total = (levelData != null && levelData.progressDuration > 0) ? levelData.progressDuration : 60f;
-        float ratio = Math.min(1f, clock.getWorldTime() / total);
+        float ratio = Math.min(1f, battleTime / total);
         float barW = 360f, barH = 18f;
         // goc PHAI DUOI cung
         float bx = GameConfig.WORLD_WIDTH - barW - 30f;
         float by = 24f;
         dd.rect(batch, bx, by, barW, barH, BAR_BG);
         dd.rect(batch, bx, by, barW * ratio, barH, BAR_FG);
+
+        // --- cot moc wave ---
+        // Moi wave la 1 moc tai vi tri (wave.time / total) tren thanh.
+        // Wave thuong = moc nho; huge wave = moc lon, mau do.
+        java.util.List<com.pvz.system.WaveSystem.WaveMarker> markers = waveSystem.getMarkers();
+        for (int i = 0; i < markers.size(); i++) {
+            com.pvz.system.WaveSystem.WaveMarker m = markers.get(i);
+            float t = Math.min(1f, m.time / total);
+            float mx = bx + barW * t;
+            boolean passed = waveSystem.isWavePassed(i);
+
+            if (m.huge) {
+                // HUGE WAVE: moc lon mau do (hoac vang neu da qua)
+                float w = 10f, h = barH + 16f;
+                Color c = passed ? MARKER_HUGE_PASSED : MARKER_HUGE;
+                dd.rect(batch, mx - w / 2f, by - 8f, w, h, c);
+                // ===== CHO INSERT ICON HUGE WAVE =====
+                // TODO: ve icon huge wave tai (mx, by + barH + 4). Vi du:
+                //   TextureRegion icon = AssetProvider.get().region("icon_hugewave");
+                //   if (icon != null) batch.draw(icon, mx - 12, by + barH + 4, 24, 24);
+            } else {
+                // WAVE THUONG: moc nho
+                float w = 5f, h = barH + 8f;
+                Color c = passed ? MARKER_WAVE_PASSED : MARKER_WAVE;
+                dd.rect(batch, mx - w / 2f, by - 4f, w, h, c);
+                // ===== CHO INSERT ICON WAVE THUONG =====
+                // TODO: ve icon wave tai (mx, by + barH + 4). Vi du:
+                //   TextureRegion icon = AssetProvider.get().region("icon_wave");
+                //   if (icon != null) batch.draw(icon, mx - 10, by + barH + 4, 20, 20);
+            }
+        }
+
+        // dau progress (con dau zombie/co di chuyen tren thanh) - chuc nang co the them sau
         if (font != null) {
             font.setColor(1f, 1f, 1f, 1f);
-            font.draw(batch, "Progress", bx, by + barH + 16f);
+            font.draw(batch, "Progress", bx, by + barH + 40f);
         }
     }
 

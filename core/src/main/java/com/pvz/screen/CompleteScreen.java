@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.pvz.manager.AudioManager;
 import com.pvz.manager.ScreenManager;
 
 /**
@@ -38,6 +39,7 @@ public class CompleteScreen extends BaseScreen {
         TextButton next = new TextButton("Back to Menu", skin);
         next.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new StartupScreen());
             }
         });
