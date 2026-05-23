@@ -3,18 +3,85 @@
   "maxPlants": 4,
   "sunFallInterval": 9,
   "sunFallAmount": 25,
-  "progressDuration": 100,
+  "progressDuration": 80,
   "unlockPlant": null,
   "unlockZombie": null,
   "unlockFeature": "speed",
   "waves": [
-    { "time": 8,  "zombieId": "basic",    "count": 2, "rows": [0,4], "huge": false },
-    { "time": 22, "zombieId": "conehead", "count": 2, "rows": [1,3], "huge": false },
-    { "time": 40, "zombieId": "basic",    "count": 3, "rows": [0,2,4], "huge": false },
-    { "time": 58, "zombieId": "conehead", "count": 2, "rows": [2,3], "huge": false },
-    { "time": 78, "zombieId": "flag",     "count": 1, "rows": [2], "huge": true },
-    { "time": 79, "zombieId": "basic",    "count": 4, "rows": [0,1,3,4], "huge": true },
-    { "time": 80, "zombieId": "conehead", "count": 2, "rows": [1,3], "huge": true }
+    {
+      "time": 8,
+      "zombieId": "basic",
+      "count": 2,
+      "rows": [
+        1
+      ],
+      "huge": false
+    },
+    {
+      "time": 22,
+      "zombieId": "conehead",
+      "count": 2,
+      "rows": [
+        1,
+        3
+      ],
+      "huge": false
+    },
+    {
+      "time": 40,
+      "zombieId": "basic",
+      "count": 3,
+      "rows": [
+        2
+      ],
+      "huge": false
+    },
+    {
+      "time": 58,
+      "zombieId": "conehead",
+      "count": 2,
+      "rows": [
+        2,
+        3
+      ],
+      "huge": false
+    },
+    {
+      "time": 78,
+      "zombieId": "flag",
+      "count": 1,
+      "rows": [
+        2
+      ],
+      "huge": true
+    },
+    {
+      "time": 79,
+      "zombieId": "basic",
+      "count": 4,
+      "rows": [
+        1,
+        3
+      ],
+      "huge": true
+    },
+    {
+      "time": 80,
+      "zombieId": "conehead",
+      "count": 2,
+      "rows": [
+        1,
+        3
+      ],
+      "huge": true
+    }
   ],
-  "hugeWaveTimes": [78]
+  "hugeWaveTimes": [
+    78
+  ],
+  "activeRows": [
+    1,
+    2,
+    3
+  ]
 }

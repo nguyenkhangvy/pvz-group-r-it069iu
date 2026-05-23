@@ -31,11 +31,19 @@ public final class AssetProvider {
     private final ObjectMap<String, TextureRegion> cache = new ObjectMap<>();
     private final ObjectMap<String, Texture> textures = new ObjectMap<>();
 
+    /** AssetManager da nap san o LoadingScreen (neu co). */
+    private com.badlogic.gdx.assets.AssetManager assets;
+
     private AssetProvider() {}
 
     public static AssetProvider get() {
         if (instance == null) instance = new AssetProvider();
         return instance;
+    }
+
+    /** Nhan AssetManager da nap san tu LoadingScreen. */
+    public void attachAssetManager(com.badlogic.gdx.assets.AssetManager am) {
+        this.assets = am;
     }
 
     /**
@@ -46,6 +54,18 @@ public final class AssetProvider {
         if (name == null || name.isEmpty()) return null;
         if (cache.containsKey(name)) return cache.get(name); // co the la null da cache
 
+        // 1) Uu tien: Texture da nap san trong AssetManager (LoadingScreen)
+        if (assets != null) {
+            String path = IMAGE_DIR + name + ".png";
+            if (assets.isLoaded(path)) {
+                Texture tex = assets.get(path, Texture.class);
+                TextureRegion region = new TextureRegion(tex);
+                cache.put(name, region);
+                return region;
+            }
+        }
+
+        // 2) Fallback: nap lazy tu dia
         FileHandle f = Gdx.files.internal(IMAGE_DIR + name + ".png");
         if (!f.exists()) {
             cache.put(name, null); // cache "khong co" de khoi kiem tra lai

@@ -15,6 +15,17 @@ public class LevelData {
     public String unlockZombie;        // zombie moi xuat hien (chi de hien o win screen)
     public String unlockFeature;       // "shovel" | "speed" | null
 
+    /**
+     * Cac hang (lane) HOAT DONG trong level nay. Index hang tu 0..4 (0 = duoi cung).
+     * Hang giua = 2. Vi du:
+     *   [2]        -> chi 1 hang giua
+     *   [1,2,3]    -> 3 hang giua
+     *   [0,1,2,3,4]-> ca 5 hang
+     * Neu null/empty -> mac dinh dung TAT CA 5 hang.
+     * Chi hang active moi co co, moi trong duoc cay, va moi co zombie.
+     */
+    public int[] activeRows;
+
     public Wave[] waves;               // timeline cac dot zombie
     public float[] hugeWaveTimes;      // cac moc (giay) la huge wave (mot lv co the nhieu)
 

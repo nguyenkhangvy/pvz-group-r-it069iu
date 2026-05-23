@@ -12,6 +12,7 @@ import com.pvz.core.GameConfig;
 import com.pvz.data.LevelData;
 import com.pvz.manager.DataManager;
 import com.pvz.manager.SaveManager;
+import com.pvz.manager.AudioManager;
 import com.pvz.manager.ScreenManager;
 
 /**
@@ -54,6 +55,7 @@ public class WinScreen extends BaseScreen {
             TextButton next = new TextButton("Finish", skin);
             next.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                     ScreenManager.get().setScreen(new CompleteScreen());
                 }
             });
@@ -62,12 +64,14 @@ public class WinScreen extends BaseScreen {
             TextButton next = new TextButton("Next Level", skin);
             next.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                     ScreenManager.get().setScreen(new ChoosePlantScreen(level + 1));
                 }
             });
             TextButton menu = new TextButton("Menu", skin);
             menu.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                     ScreenManager.get().setScreen(new StartupScreen());
                 }
             });

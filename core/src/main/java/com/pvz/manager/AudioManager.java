@@ -35,6 +35,12 @@ public final class AudioManager {
     public static final String THEME      = "theme";        // nhac nen
     public static final String CLICK      = "click";        // bam nut
     public static final String SHOOT      = "shoot";        // cay ban dan
+    public static final String HIT_ZOMBIE = "splat";        // pea trung zombie
+    public static final String CHOMP      = "chomp2";       // chomper nhai
+    public static final String VAULT      = "splat2";       // pole vault nhay qua cay
+    public static final String ZOMBIE_DIE = "groan";        // zombie het mau (chet)
+    public static final String GULP       = "gulp";         // zombie nuot khi cay ve 0 hp
+    public static final String SHOVEL     = "shovel";       // xen go cay
     public static final String PLANT      = "plant";        // dat cay xuong
     public static final String SUN_PICK   = "sun";          // nhat sun
     public static final String ZOMBIE_EAT = "zombie_eat";   // zombie an cay
@@ -42,6 +48,7 @@ public final class AudioManager {
     public static final String MOWER      = "mower";        // may xen co chay
     public static final String WIN        = "win";          // thang man
     public static final String LOSE       = "lose";         // thua man
+    public static final String HUGE_WAVE  = "finalwave";    // huge wave (dot lon) xuat hien
 
     private static AudioManager instance;
 
@@ -50,11 +57,42 @@ public final class AudioManager {
     private final ObjectMap<String, Sound> soundCache = new ObjectMap<>();
     private final ObjectMap<String, Boolean> missing = new ObjectMap<>(); // file da biet la khong co
 
+    // AssetManager do LoadingScreen nap san va ban giao (co the null neu khong dung loading).
+    private com.badlogic.gdx.assets.AssetManager assets;
+    private String assetDir = AUDIO_DIR;
+
     private AudioManager() {}
 
     public static AudioManager get() {
         if (instance == null) instance = new AudioManager();
         return instance;
+    }
+
+    /**
+     * Nhan AssetManager da nap san tu LoadingScreen. Tu day getSound()/theme se
+     * lay tu day truoc (da nap san -> khong giat), chi fallback nap lazy neu thieu.
+     */
+    public void attachAssetManager(com.badlogic.gdx.assets.AssetManager am, String dir) {
+        this.assets = am;
+        this.assetDir = dir;
+    }
+
+    /** Tim duong dan day du cua file am thanh trong AssetManager (thu .wav/.ogg/.mp3). */
+    private String assetPath(String name) {
+        if (name == null) return null;
+        for (String ext : EXTS) {
+            String path = assetDir + name + ext;
+            if (assets != null && assets.isLoaded(path)) return path;
+        }
+        return null;
+    }
+
+    /**
+     * Nap san (cache) cac sound quan trong de lan phat dau tien khong bi tre.
+     * Goi 1 lan khi khoi dong game.
+     */
+    public void preload(String... names) {
+        for (String name : names) getSound(name);
     }
 
     /** Tim FileHandle theo ten (thu .ogg/.mp3/.wav). Tra null neu khong co. */
@@ -78,9 +116,16 @@ public final class AudioManager {
     private void startThemeIfNeeded() {
         if (themeKey == null) return;
         if (themeMusic == null) {
-            FileHandle f = resolve(themeKey);
-            if (f == null) { Gdx.app.log("AudioManager", "Chua co nhac nen: " + themeKey); return; }
-            themeMusic = Gdx.audio.newMusic(f);
+            // 1) Uu tien: Music da nap san trong AssetManager (LoadingScreen)
+            String path = assetPath(themeKey);
+            if (path != null && assets != null) {
+                themeMusic = assets.get(path, com.badlogic.gdx.audio.Music.class);
+            } else {
+                // 2) Fallback: nap lazy tu dia
+                FileHandle f = resolve(themeKey);
+                if (f == null) { Gdx.app.log("AudioManager", "Chua co nhac nen: " + themeKey); return; }
+                themeMusic = Gdx.audio.newMusic(f);
+            }
             themeMusic.setLooping(true);
             themeMusic.setVolume(0.6f);
         }
@@ -125,6 +170,16 @@ public final class AudioManager {
     private Sound getSound(String name) {
         if (soundCache.containsKey(name)) return soundCache.get(name);
         if (missing.containsKey(name)) return null;       // da biet khong co
+
+        // 1) Uu tien: lay tu AssetManager da nap san o LoadingScreen (khong giat)
+        String path = assetPath(name);
+        if (path != null) {
+            Sound s = assets.get(path, Sound.class);
+            soundCache.put(name, s);
+            return s;
+        }
+
+        // 2) Fallback: nap lazy tu dia (cho truong hop chua qua LoadingScreen)
         FileHandle f = resolve(name);
         if (f == null) {
             Gdx.app.log("AudioManager", "Chua co sound: " + name);
@@ -148,8 +203,17 @@ public final class AudioManager {
 
     // ===================== DISPOSE =====================
     public void dispose() {
-        if (themeMusic != null) { themeMusic.dispose(); themeMusic = null; }
-        for (Sound s : soundCache.values()) s.dispose();
+        // Neu da ban giao AssetManager: chinh no se dispose toan bo Sound/Music
+        // ma no giu. Ta KHONG tu dispose nhung cai do (tranh double-dispose -> crash).
+        if (assets != null) {
+            assets.dispose();
+            assets = null;
+        } else {
+            // Truong hop khong qua LoadingScreen: ta tu nap lazy nen tu dispose.
+            if (themeMusic != null) themeMusic.dispose();
+            for (Sound s : soundCache.values()) s.dispose();
+        }
+        themeMusic = null;
         soundCache.clear();
     }
 }

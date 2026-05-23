@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.pvz.data.LevelData;
 import com.pvz.manager.DataManager;
+import com.pvz.manager.AudioManager;
 import com.pvz.manager.ScreenManager;
 import com.pvz.system.PlantUnlockSystem;
 
@@ -58,6 +59,7 @@ public class ChoosePlantScreen extends BaseScreen {
             final TextButton b = new TextButton(plantId, skin);
             b.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent e, Actor a) {
+                    AudioManager.get().playClick();
                     if (chosen.contains(plantId, false)) {
                         // bo chon
                         chosen.removeValue(plantId, false);
@@ -77,6 +79,7 @@ public class ChoosePlantScreen extends BaseScreen {
         TextButton start = new TextButton("Start Battle", skin);
         start.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new GameScreen(level, chosen));
             }
         });
@@ -84,6 +87,7 @@ public class ChoosePlantScreen extends BaseScreen {
         TextButton back = new TextButton("Back", skin);
         back.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                AudioManager.get().playClick();
                 ScreenManager.get().setScreen(new StartupScreen());
             }
         });

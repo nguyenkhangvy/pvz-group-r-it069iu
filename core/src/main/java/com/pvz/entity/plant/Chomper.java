@@ -54,6 +54,8 @@ public class Chomper extends Plant {
                 target.takeDamage(data.chew.chompDamage); // nuot chung
                 chompState = ChompState.CHEWING;
                 chewTimer = 0f;
+                com.pvz.manager.AudioManager.get().playGameSound(
+                    com.pvz.manager.AudioManager.CHOMP, 0.9f); // tieng nhai cua Chomper
             }
         }
     }
