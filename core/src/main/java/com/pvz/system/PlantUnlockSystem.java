@@ -8,7 +8,7 @@ import com.pvz.core.GameConfig;
  *
  * Theo dung thiet ke cua ban:
  *  - Peashooter co tu DAU (level 1).
- *  - Cay unlock SAU KHI THANG level do (ghi trong level JSON: unlockPlant).
+ *  - Cay unlock SAU KHI THANG level do (hardcode trong PlantUnlockSystem).
  *  - Khi vao choosing plant cua level N, nguoi choi co: peashooter + tat ca cay
  *    unlock tu cac level TRUOC N (1..N-1).
  *
@@ -26,7 +26,6 @@ import com.pvz.core.GameConfig;
  *   peashooter + sunflower + cherrybomb + wallnut + potatomine.
  *
  * LUU Y: ten id o day phai KHOP voi ten file JSON trong assets/data/plants/.
- * Day la "nguon su that" ve unlock; level JSON.unlockPlant chi de hien o win screen.
  * Neu ban muon dua hoan toan vao JSON, co the thay bang doc DataManager sau.
  */
 public final class PlantUnlockSystem {

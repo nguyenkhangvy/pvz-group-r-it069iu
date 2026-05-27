@@ -1,85 +1,69 @@
 {
   "id": "1-3",
-  "maxPlants": 3,
-  "sunFallInterval": 9,
+  "maxPlants": 6,
+  "sunFallInterval": 10,
   "sunFallAmount": 25,
-  "progressDuration": 77,
-  "unlockPlant": "wallnut",
-  "unlockZombie": "conehead",
-  "unlockFeature": "shovel",
-  "waves": [
-    {
-      "time": 8,
-      "zombieId": "basic",
-      "count": 2,
-      "rows": [
-        1,
-        3
-      ],
-      "huge": false
-    },
-    {
-      "time": 22,
-      "zombieId": "conehead",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": false
-    },
-    {
-      "time": 40,
-      "zombieId": "basic",
-      "count": 2,
-      "rows": [
-        1
-      ],
-      "huge": false
-    },
-    {
-      "time": 58,
-      "zombieId": "conehead",
-      "count": 2,
-      "rows": [
-        1,
-        3
-      ],
-      "huge": false
-    },
-    {
-      "time": 75,
-      "zombieId": "flag",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": true
-    },
-    {
-      "time": 76,
-      "zombieId": "basic",
-      "count": 3,
-      "rows": [
-        2
-      ],
-      "huge": true
-    },
-    {
-      "time": 77,
-      "zombieId": "conehead",
-      "count": 1,
-      "rows": [
-        1
-      ],
-      "huge": true
-    }
-  ],
-  "hugeWaveTimes": [
-    75
-  ],
+  "progressDuration": 152.0,
   "activeRows": [
     1,
     2,
     3
+  ],
+  "waves": [
+    {
+      "time": 15.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 35.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 45.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 75.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 85.0,
+      "zombieId": "conehead",
+      "count": 1
+    },
+    {
+      "time": 115.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 130.0,
+      "zombieId": "basic",
+      "count": 3
+    },
+    {
+      "time": 150.0,
+      "zombieId": "flag",
+      "count": 1
+    },
+    {
+      "time": 150.0,
+      "zombieId": "conehead",
+      "count": 1
+    },
+    {
+      "time": 150.0,
+      "zombieId": "basic",
+      "count": 3
+    },
+    {
+      "time": 152.0,
+      "zombieId": "basic",
+      "count": 1
+    }
   ]
 }

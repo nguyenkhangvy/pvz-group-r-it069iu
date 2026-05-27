@@ -29,9 +29,16 @@ public final class ZombieFactory {
         float h = GameConfig.CELL_HEIGHT * 0.9f;
 
         // PoleVault: nhan dien qua id, hoac qua su ton tai cua nhom "vault" trong JSON.
+        Zombie z;
         if ("polevault".equals(zombieId) || zd.vault != null) {
-            return new PoleVaultZombie(zd, row, startX, cy, w, h);
+            z = new PoleVaultZombie(zd, row, startX, cy, w, h);
+        } else {
+            z = new Zombie(zd, row, startX, cy, w, h);
         }
-        return new Zombie(zd, row, startX, cy, w, h);
+
+        // ap he so DO KHO (hp/damage/speed) - mot cho duy nhat, moi zombie deu chiu
+        com.pvz.core.Difficulty d = com.pvz.manager.SaveManager.get().getDifficulty();
+        z.applyDifficulty(d.hpMul, d.damageMul, d.speedMul);
+        return z;
     }
 }

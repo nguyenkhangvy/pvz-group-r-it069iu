@@ -22,13 +22,13 @@ public final class GameConfig {
      * ban se chinh lai cho khop voi anh nen that sau nay.
      * Goc (LAWN_X, LAWN_Y) la goc duoi-trai cua o (row=0, col=0).
      */
-    public static final float LAWN_X = 260f;   // le trai cua san
-    public static final float LAWN_Y = 80f;    // le duoi cua san
-    public static final float CELL_WIDTH = 100f;
-    public static final float CELL_HEIGHT = 110f;
+    public static final float LAWN_X = 250f;   // le trai cua san
+    public static final float LAWN_Y = 117f;    // le duoi cua san
+    public static final float CELL_WIDTH = 95f;
+    public static final float CELL_HEIGHT = 95f;
 
     // ----- Sun -----
-    public static final int START_SUN_DEFAULT = 50;     // sun ban dau
+    public static final int START_SUN_DEFAULT = 150;    // sun ban dau
     public static final float SUN_LIFETIME = 20f;       // sun bien mat sau 20s neu khong nhat
 
     // ----- Save / level -----

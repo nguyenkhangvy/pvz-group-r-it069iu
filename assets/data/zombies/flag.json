@@ -14,10 +14,6 @@
     ],
     "dying": [
       "flag_die"
-    ],
-    "special": [
-      "flag_special_0",
-      "flag_special_1"
     ]
   }
 }

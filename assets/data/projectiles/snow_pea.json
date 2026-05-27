@@ -3,7 +3,7 @@
   "damage": 20,
   "slow": {
     "factor": 0.5,
-    "duration": 4
+    "duration": 1
   },
   "animation": [
     "snow_pea"

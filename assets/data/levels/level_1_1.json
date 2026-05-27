@@ -1,54 +1,37 @@
 {
   "id": "1-1",
-  "maxPlants": 1,
+  "maxPlants": 6,
   "sunFallInterval": 10,
   "sunFallAmount": 25,
-  "progressDuration": 50,
-  "unlockPlant": "sunflower",
-  "unlockZombie": "basic",
-  "unlockFeature": null,
-  "waves": [
-    {
-      "time": 8,
-      "zombieId": "basic",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": false
-    },
-    {
-      "time": 22,
-      "zombieId": "basic",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": false
-    },
-    {
-      "time": 35,
-      "zombieId": "basic",
-      "count": 2,
-      "rows": [
-        2
-      ],
-      "huge": false
-    },
-    {
-      "time": 50,
-      "zombieId": "basic",
-      "count": 3,
-      "rows": [
-        2
-      ],
-      "huge": true
-    }
-  ],
-  "hugeWaveTimes": [
-    50
-  ],
+  "progressDuration": 52.0,
   "activeRows": [
     2
+  ],
+  "waves": [
+    {
+      "time": 20.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 30.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 40.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 50.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 52.0,
+      "zombieId": "basic",
+      "count": 1
+    }
   ]
 }

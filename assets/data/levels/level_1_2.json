@@ -1,63 +1,54 @@
 {
   "id": "1-2",
-  "maxPlants": 2,
+  "maxPlants": 6,
   "sunFallInterval": 10,
   "sunFallAmount": 25,
-  "progressDuration": 56,
-  "unlockPlant": "cherrybomb",
-  "unlockZombie": "flag",
-  "unlockFeature": null,
+  "progressDuration": 132.0,
+  "activeRows": [
+    1,
+    2,
+    3
+  ],
   "waves": [
     {
-      "time": 8,
+      "time": 35.0,
       "zombieId": "basic",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": false
+      "count": 1
     },
     {
-      "time": 20,
+      "time": 55.0,
       "zombieId": "basic",
-      "count": 2,
-      "rows": [
-        2
-      ],
-      "huge": false
+      "count": 1
     },
     {
-      "time": 38,
+      "time": 75.0,
       "zombieId": "basic",
-      "count": 2,
-      "rows": [
-        2
-      ],
-      "huge": false
+      "count": 1
     },
     {
-      "time": 55,
+      "time": 95.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 105.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 130.0,
       "zombieId": "flag",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": true
+      "count": 1
     },
     {
-      "time": 56,
+      "time": 130.0,
       "zombieId": "basic",
-      "count": 4,
-      "rows": [
-        2
-      ],
-      "huge": true
+      "count": 3
+    },
+    {
+      "time": 132.0,
+      "zombieId": "basic",
+      "count": 1
     }
-  ],
-  "hugeWaveTimes": [
-    55
-  ],
-  "activeRows": [
-    2
   ]
 }

@@ -56,7 +56,7 @@ public class AnimationComponent {
     /** Doi trang thai. Reset frame ve dau neu khac trang thai cu. */
     public void setState(String stateName) {
         if (stateName == null || stateName.equals(current)) return;
-        if (!states.containsKey(stateName)) return; // khong co trang thai nay -> giu nguyen
+        if (!states.containsKey(stateName)) return;
         current = stateName;
         timer = 0f;
         frameIndex = 0;
@@ -81,11 +81,6 @@ public class AnimationComponent {
         if (frames == null || frames.size == 0) return null;
         if (frameIndex >= frames.size) frameIndex = 0;
         return frames.get(frameIndex);
-    }
-
-    /** Co bat ky anh nao kha dung khong (de entity quyet dinh ve anh hay khoi mau). */
-    public boolean hasFrames() {
-        return getFrame() != null;
     }
 
     public String getCurrentState() { return current; }

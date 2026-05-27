@@ -3,7 +3,6 @@ package com.pvz.entity.zombie;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.pvz.util.DebugDraw;
 import com.pvz.data.ZombieData;
 import com.pvz.entity.AnimationComponent;
 import com.pvz.entity.Entity;
@@ -29,6 +28,10 @@ public class Zombie extends Entity {
     protected float slowTimer = 0f;
     protected float slowFactor = 1f;
 
+    // He so DO KHO (mac dinh 1.0 = Normal khong doi). Set ngay sau khi tao.
+    protected float damageMul = 1f;
+    protected float speedMul = 1f;
+
     protected final AnimationComponent anim = new AnimationComponent();
 
     public Zombie(ZombieData data, int row, float startX, float centerY,
@@ -38,6 +41,19 @@ public class Zombie extends Entity {
         this.row = row;
         loadAnimations();
     }
+
+    /**
+     * Ap he so do kho. hpMul nhan vao hp (vi luc nay zombie vua tao).
+     * Goi NGAY sau khi tao trong Factory.
+     */
+    public void applyDifficulty(float hpMul, float damageMul, float speedMul) {
+        this.hp *= hpMul;
+        this.damageMul = damageMul;
+        this.speedMul = speedMul;
+    }
+
+    /** Damage moi don can, da nhan he so do kho. */
+    public float getBiteDamage() { return data.damage * damageMul; }
 
     /** Nap animation tu JSON (fallback khoi mau neu chua co anh). */
     protected void loadAnimations() {
@@ -49,6 +65,10 @@ public class Zombie extends Entity {
         anim.setState("walking");
     }
 
+    /** Thoi gian hien animation dying truoc khi bien mat (giay). */
+    protected static final float DYING_DURATION = 0.6f;
+    protected float dyingTimer = 0f;
+
     @Override
     public void update(float delta) {
         // cap nhat slow
@@ -57,8 +77,17 @@ public class Zombie extends Entity {
             if (slowTimer <= 0f) slowFactor = 1f;
         }
 
+        if (state == State.DYING) {
+            dyingTimer += delta;
+            anim.update(delta);
+            if (dyingTimer >= DYING_DURATION) {
+                finishDying();
+            }
+            return; // khong di chuyen, khong an
+        }
+
         if (state == State.WALKING) {
-            x -= data.speed * slowFactor * delta;
+            x -= data.speed * speedMul * slowFactor * delta;
             anim.setState("walking");
         } else if (state == State.EATING) {
             eatTimer += delta;
@@ -81,16 +110,22 @@ public class Zombie extends Entity {
     }
 
     /**
-     * Override kill(): phat tieng zombie chet MOT LAN, bat ke nguon giet la gi
-     * (pea, chomper, cherry bomb, potato mine, lawn mower...). Dung co diedSoundPlayed
-     * de khong phat lap neu kill() bi goi nhieu lan.
+     * Override kill(): chuyen sang DYING state de hien animation dying,
+     * roi moi that su bien mat sau DYING_DURATION.
      */
     @Override
     public void kill() {
-        if (!alive) return;            // da chet roi, bo qua
-        super.kill();
+        if (!alive || state == State.DYING) return; // da chet/dang dying -> bo qua
+        state = State.DYING;
+        anim.setState("dying");
+        dyingTimer = 0f;
         com.pvz.manager.AudioManager.get().playGameSound(
             com.pvz.manager.AudioManager.ZOMBIE_DIE, 0.7f);
+    }
+
+    /** That su bien mat (goi sau khi dying animation xong). */
+    protected void finishDying() {
+        alive = false;
     }
 
     @Override
@@ -99,19 +134,14 @@ public class Zombie extends Entity {
         if (frame != null) {
             batch.setColor(Color.WHITE);
             batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
-        } else {
-            drawDebug(batch);
         }
-    }
-
-    @Override
-    public void drawDebug(SpriteBatch batch) {
-        DebugDraw.get().rectCentered(batch, x, y, width, height,
-            state == State.EATING ? Color.RED : Color.GRAY);
     }
 
     public int getRow() { return row; }
     public State getState() { return state; }
     public void setState(State s) { this.state = s; }
     public ZombieData getData() { return data; }
+
+    /** Zombie dang trong animation dying (con hien anh nhung khong tuong tac). */
+    public boolean isDying() { return state == State.DYING; }
 }

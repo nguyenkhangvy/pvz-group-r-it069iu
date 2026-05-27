@@ -48,7 +48,6 @@ public final class AudioManager {
     public static final String MOWER      = "mower";        // may xen co chay
     public static final String WIN        = "win";          // thang man
     public static final String LOSE       = "lose";         // thua man
-    public static final String HUGE_WAVE  = "finalwave";    // huge wave (dot lon) xuat hien
 
     private static AudioManager instance;
 
@@ -189,6 +188,20 @@ public final class AudioManager {
         Sound s = Gdx.audio.newSound(f);
         soundCache.put(name, s);
         return s;
+    }
+
+    /**
+     * Dao trang thai ON/OFF cua 1 trong 3 kenh am thanh.
+     * index: 0=theme, 1=click, 2=gameSound.
+     * Gom logic trung lap tu PauseMenu va MusicScreen vao 1 cho duy nhat.
+     */
+    public void toggleSetting(int index) {
+        SaveManager.SettingsData s = SaveManager.get().settings();
+        switch (index) {
+            case 0: setThemeOn(!s.themeMusicOn); break;
+            case 1: setClickOn(!s.clickSoundOn); break;
+            case 2: setGameSoundOn(!s.gameSoundOn); break;
+        }
     }
 
     public void setClickOn(boolean on) {

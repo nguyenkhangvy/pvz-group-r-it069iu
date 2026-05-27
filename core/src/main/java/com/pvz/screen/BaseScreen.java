@@ -59,6 +59,19 @@ public abstract class BaseScreen extends ScreenAdapter {
     /** Lop con ve noi dung. */
     protected abstract void draw();
 
+    /**
+     * Tien ich: ve anh nen full man hinh. Cac screen khong can lap lai doan
+     * AssetProvider.get().region(name) + null check + batch.draw nua.
+     */
+    protected void drawBackground(String regionName) {
+        com.badlogic.gdx.graphics.g2d.TextureRegion bg =
+            com.pvz.manager.AssetProvider.get().region(regionName);
+        if (bg != null) {
+            batch.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+            batch.draw(bg, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT);
+        }
+    }
+
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
