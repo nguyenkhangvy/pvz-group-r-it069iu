@@ -2,166 +2,141 @@ package com.pvz.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.pvz.core.GameConfig;
+import com.pvz.manager.AssetProvider;
 import com.pvz.manager.AudioManager;
 import com.pvz.manager.SaveManager;
-import com.pvz.util.DebugDraw;
 
 /**
- * PauseMenu: menu cai dat hien khi PAUSE giua game (overlay).
+ * PauseMenu (SETTINGS overlay khi pause) - phien ban don gian.
  *
- * Ve tay bang DebugDraw + BitmapFont cho dong nhat voi GameScreen (khong tron Scene2D).
- * Xu ly nut bam bang chuot. Vi the gioi DUNG khi pause, menu nay duoc cap nhat
- * bang realDelta (luon song) - dung tinh than "van khoa thoi gian".
+ * Ban chi can them vao assets/images/ (folder nao cung duoc, ten khong trung):
+ *   pause_panel    - anh nen overlay: da co title SETTINGS + 3 hang
+ *                    (icon + nhan THEME / CLICK / GAME). Ve can giua man.
+ *   toggle_on      - nut bat ON.
+ *   toggle_off     - nut tat OFF.
+ *   btn_resume     - nut RESUME.
+ *   btn_restart    - nut RESTART LEVEL.
+ *   btn_main_menu  - nut MAIN MENU.
  *
- * Cac muc:
- *  - Resume
- *  - Theme Music  : ON/OFF
- *  - Click Sound  : ON/OFF
- *  - Game Sound   : ON/OFF
- *  - Restart      : choi lai level (ve choosing plant cua level do)
- *  - Main Menu    : ve man hinh chinh
+ * Code chi: lop mo + ve panel + dat 3 toggle dung vi tri 3 hang + 3 nut.
+ * Bam vung hang -> dao ON/OFF.
  *
- * PauseMenu KHONG tu chuyen man; no bao hanh dong ra ngoai qua getAction()
- * de GameScreen quyet dinh (giu quyen dieu huong o GameScreen).
+ * GIU NGUYEN API (handleInput/getAction/reset/draw + enum Action) -> GameScreen
+ * khong phai sua. Cap nhat bang realDelta khi pause -> menu van song.
+ *
+ * Chinh toa do o dau file cho khop anh panel cua ban.
  */
 public class PauseMenu {
 
-    /** Hanh dong nguoi choi chon trong menu (GameScreen doc va xu ly). */
     public enum Action { NONE, RESUME, RESTART, MAIN_MENU }
 
-    // bo cuc panel
-    private static final float PANEL_W = 460f;
-    private static final float PANEL_H = 470f;
-    private static final float BTN_W = 360f;
-    private static final float BTN_H = 56f;
-    private static final float BTN_GAP = 14f;
+    // ---- panel (ve can giua man) ----
+    private static final float PANEL_W = 767f, PANEL_H = 563f;
+    private static final float PANEL_X = (GameConfig.WORLD_WIDTH - PANEL_W) / 2f;
+    private static final float PANEL_Y = (GameConfig.WORLD_HEIGHT - PANEL_H) / 2f;
 
-    // mau
-    private static final Color DIM      = new Color(0f, 0f, 0f, 0.6f);   // lop mo nen
-    private static final Color PANEL_BG = new Color(0.16f, 0.13f, 0.10f, 0.96f);
-    private static final Color PANEL_BD = new Color(0.55f, 0.42f, 0.22f, 1f);
-    private static final Color BTN_BG   = new Color(0.30f, 0.45f, 0.22f, 1f);
-    private static final Color BTN_HOV  = new Color(0.42f, 0.62f, 0.30f, 1f);
-    private static final Color ON_COLOR  = new Color(0.35f, 0.75f, 0.35f, 1f);
-    private static final Color OFF_COLOR = new Color(0.55f, 0.30f, 0.30f, 1f);
-    private static final Color TXT      = new Color(1f, 1f, 1f, 1f);
+    // ---- 3 toggle on/off (vi tri tuyet doi tren man, chinh cho khop panel) ----
+    private static final float TOGGLE_X = 675f;
+    private static final float TOGGLE_W = 125f, TOGGLE_H = 46f;
+    private static final float ROW_THEME_Y = 470f;
+    private static final float ROW_CLICK_Y = 383f;
+    private static final float ROW_GAME_Y  = 296f;
+    // vung bam ca hang
+    private static final float ROW_HIT_X = 342f, ROW_HIT_W = 600f, ROW_HIT_H = 70f;
 
-    private final BitmapFont font;
-    private final GlyphLayout layout = new GlyphLayout();
+    // ---- 3 nut ----
+    private static final float BTN_W = 300f, BTN_H = 64f;
+    private static final float RESUME_X = 357f, RESTART_X = 590f, BTN_TOP_Y = 192f;
+    private static final float MENU_X = 475f, BTN_BOT_Y = 125f;
+
     private final Vector3 mouse = new Vector3();
-
-    // toa do panel (tinh 1 lan)
-    private final float panelX, panelY;
-    private final float btnX;
-    private final float[] btnY = new float[6]; // 6 nut
+    private final float[] toggleY = { ROW_THEME_Y, ROW_CLICK_Y, ROW_GAME_Y };
 
     private Action action = Action.NONE;
 
+    /** Giu chu ky constructor cu (nhan font) de GameScreen khong phai sua. */
     public PauseMenu(BitmapFont font) {
-        this.font = font;
-        panelX = GameConfig.WORLD_WIDTH / 2f - PANEL_W / 2f;
-        panelY = GameConfig.WORLD_HEIGHT / 2f - PANEL_H / 2f;
-        btnX = GameConfig.WORLD_WIDTH / 2f - BTN_W / 2f;
-
-        // xep 6 nut tu tren xuong trong panel
-        float top = panelY + PANEL_H - 90f;
-        for (int i = 0; i < btnY.length; i++) {
-            btnY[i] = top - i * (BTN_H + BTN_GAP);
-        }
+        // font khong con dung (chu da nam trong anh), giu tham so cho tuong thich.
     }
 
-    /** Reset hanh dong moi lan mo menu. */
     public void reset() { action = Action.NONE; }
-
     public Action getAction() { return action; }
 
-    /**
-     * Xu ly input cua menu (goi khi paused). camera dung de unproject chuot.
-     * justTouched: true neu vua click frame nay.
-     */
-    public void handleInput(com.badlogic.gdx.graphics.OrthographicCamera camera) {
+    public void handleInput(OrthographicCamera camera) {
         if (!Gdx.input.justTouched()) return;
         mouse.set(Gdx.input.getX(), Gdx.input.getY(), 0);
         camera.unproject(mouse);
 
+        // 3 hang toggle (bam ca hang)
+        for (int i = 0; i < 3; i++) {
+            float rowY = toggleY[i] + TOGGLE_H / 2f - ROW_HIT_H / 2f;
+            if (inRect(ROW_HIT_X, rowY, ROW_HIT_W, ROW_HIT_H)) {
+                toggleRow(i);
+                AudioManager.get().playClick();
+                return;
+            }
+        }
+        // 3 nut
+        if (inRect(RESUME_X, BTN_TOP_Y, BTN_W, BTN_H)) {
+            AudioManager.get().playClick(); action = Action.RESUME; return;
+        }
+        if (inRect(RESTART_X, BTN_TOP_Y, BTN_W, BTN_H)) {
+            AudioManager.get().playClick(); action = Action.RESTART; return;
+        }
+        if (inRect(MENU_X, BTN_BOT_Y, BTN_W, BTN_H)) {
+            AudioManager.get().playClick(); action = Action.MAIN_MENU; return;
+        }
+    }
+
+    private boolean inRect(float x, float y, float w, float h) {
+        return mouse.x >= x && mouse.x <= x + w && mouse.y >= y && mouse.y <= y + h;
+    }
+
+    private void toggleRow(int i) {
+        AudioManager.get().toggleSetting(i);
+    }
+
+    public void draw(SpriteBatch batch, OrthographicCamera camera) {
+        AssetProvider ap = AssetProvider.get();
         SaveManager.SettingsData s = SaveManager.get().settings();
+        boolean[] on = { s.themeMusicOn, s.clickSoundOn, s.gameSoundOn };
 
-        if (hit(0)) { AudioManager.get().playClick(); action = Action.RESUME; return; }
-        if (hit(1)) { AudioManager.get().setThemeOn(!s.themeMusicOn); AudioManager.get().playClick(); return; }
-        if (hit(2)) { AudioManager.get().setClickOn(!s.clickSoundOn); AudioManager.get().playClick(); return; }
-        if (hit(3)) { AudioManager.get().setGameSoundOn(!s.gameSoundOn); AudioManager.get().playClick(); return; }
-        if (hit(4)) { AudioManager.get().playClick(); action = Action.RESTART; return; }
-        if (hit(5)) { AudioManager.get().playClick(); action = Action.MAIN_MENU; return; }
+        // lop mo toan man (game dong bang phia sau)
+        com.pvz.util.DebugDraw.get().rect(batch, 0, 0,
+            GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT, new Color(0f, 0f, 0f, 0.6f));
+        batch.setColor(Color.WHITE);
+
+        // panel nen (title + icon + nhan da co san trong anh)
+        TextureRegion panel = ap.region("pause_panel");
+        if (panel != null) {
+            batch.draw(panel, PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
+        }
+
+        // 3 toggle
+        for (int i = 0; i < 3; i++) {
+            TextureRegion tg = ap.region(on[i] ? "toggle_on" : "toggle_off");
+            if (tg != null) batch.draw(tg, TOGGLE_X, toggleY[i], TOGGLE_W, TOGGLE_H);
+        }
+
+        // 3 nut
+        drawBtn(batch, ap, "btn_resume",    RESUME_X,  BTN_TOP_Y);
+        drawBtn(batch, ap, "btn_restart",   RESTART_X, BTN_TOP_Y);
+        drawBtn(batch, ap, "btn_main_menu", MENU_X,    BTN_BOT_Y);
+
+        batch.setColor(Color.WHITE);
     }
 
-    private boolean hit(int i) {
-        return mouse.x >= btnX && mouse.x <= btnX + BTN_W
-            && mouse.y >= btnY[i] && mouse.y <= btnY[i] + BTN_H;
-    }
-
-    /** Ve overlay menu. Goi trong batch.begin()/end() cua GameScreen. */
-    public void draw(SpriteBatch batch, com.badlogic.gdx.graphics.OrthographicCamera camera) {
-        DebugDraw dd = DebugDraw.get();
-        SaveManager.SettingsData s = SaveManager.get().settings();
-
-        // lop mo toan man
-        dd.rect(batch, 0, 0, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT, DIM);
-
-        // vien panel + nen
-        dd.rect(batch, panelX - 4, panelY - 4, PANEL_W + 8, PANEL_H + 8, PANEL_BD);
-        dd.rect(batch, panelX, panelY, PANEL_W, PANEL_H, PANEL_BG);
-
-        // tieu de
-        font.setColor(1f, 0.9f, 0.4f, 1f);
-        drawCentered(batch, "SETTINGS", GameConfig.WORLD_WIDTH / 2f, panelY + PANEL_H - 36f);
-
-        // toa do chuot hien tai (de to mau hover)
-        mouse.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-        camera.unproject(mouse);
-
-        drawButton(batch, 0, "Resume");
-        drawToggle(batch, 1, "Theme Music", s.themeMusicOn);
-        drawToggle(batch, 2, "Click Sound", s.clickSoundOn);
-        drawToggle(batch, 3, "Game Sound", s.gameSoundOn);
-        drawButton(batch, 4, "Restart Level");
-        drawButton(batch, 5, "Main Menu");
-    }
-
-    private void drawButton(SpriteBatch batch, int i, String text) {
-        DebugDraw dd = DebugDraw.get();
-        boolean hov = isOver(i);
-        dd.rect(batch, btnX, btnY[i], BTN_W, BTN_H, hov ? BTN_HOV : BTN_BG);
-        font.setColor(TXT);
-        drawCentered(batch, text, GameConfig.WORLD_WIDTH / 2f, btnY[i] + BTN_H / 2f + 7f);
-    }
-
-    private void drawToggle(SpriteBatch batch, int i, String label, boolean on) {
-        DebugDraw dd = DebugDraw.get();
-        boolean hov = isOver(i);
-        dd.rect(batch, btnX, btnY[i], BTN_W, BTN_H, hov ? BTN_HOV : BTN_BG);
-        // o trang thai ON/OFF ben phai
-        float tagW = 70f, tagH = 36f;
-        float tagX = btnX + BTN_W - tagW - 12f;
-        float tagY = btnY[i] + (BTN_H - tagH) / 2f;
-        dd.rect(batch, tagX, tagY, tagW, tagH, on ? ON_COLOR : OFF_COLOR);
-
-        font.setColor(TXT);
-        font.draw(batch, label, btnX + 18f, btnY[i] + BTN_H / 2f + 7f);
-        drawCentered(batch, on ? "ON" : "OFF", tagX + tagW / 2f, tagY + tagH / 2f + 7f);
-    }
-
-    private boolean isOver(int i) {
-        return mouse.x >= btnX && mouse.x <= btnX + BTN_W
-            && mouse.y >= btnY[i] && mouse.y <= btnY[i] + BTN_H;
-    }
-
-    private void drawCentered(SpriteBatch batch, String text, float centerX, float baselineY) {
-        layout.setText(font, text);
-        font.draw(batch, text, centerX - layout.width / 2f, baselineY + layout.height / 2f);
+    private void drawBtn(SpriteBatch batch, AssetProvider ap, String name, float x, float y) {
+        TextureRegion img = ap.region(name);
+        if (img != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(img, x, y, BTN_W, BTN_H);
+        }
     }
 }

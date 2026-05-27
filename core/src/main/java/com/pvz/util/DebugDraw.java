@@ -39,21 +39,6 @@ public final class DebugDraw {
         batch.setColor(Color.WHITE); // reset
     }
 
-    /** Ve hinh chu nhat theo tam (cx,cy). */
-    public void rectCentered(SpriteBatch batch, float cx, float cy, float w, float h, Color color) {
-        rect(batch, cx - w / 2f, cy - h / 2f, w, h, color);
-    }
-
-    /** Ve duong NGANG manh tu (x,y) dai `length`. */
-    public void hLine(SpriteBatch batch, float x, float y, float length, float thickness, Color color) {
-        rect(batch, x, y - thickness / 2f, length, thickness, color);
-    }
-
-    /** Ve duong DOC manh tu (x,y) cao `length`. */
-    public void vLine(SpriteBatch batch, float x, float y, float length, float thickness, Color color) {
-        rect(batch, x - thickness / 2f, y, thickness, length, color);
-    }
-
     public void dispose() {
         white.dispose();
     }

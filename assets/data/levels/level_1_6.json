@@ -1,103 +1,96 @@
 {
   "id": "1-6",
   "maxPlants": 6,
-  "sunFallInterval": 8,
+  "sunFallInterval": 10,
   "sunFallAmount": 25,
-  "progressDuration": 102,
-  "unlockPlant": "snowpea",
-  "unlockZombie": "polevault",
-  "unlockFeature": null,
-  "waves": [
-    {
-      "time": 8,
-      "zombieId": "basic",
-      "count": 3,
-      "rows": [
-        0,
-        2,
-        4
-      ],
-      "huge": false
-    },
-    {
-      "time": 24,
-      "zombieId": "polevault",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": false
-    },
-    {
-      "time": 42,
-      "zombieId": "conehead",
-      "count": 2,
-      "rows": [
-        1,
-        3
-      ],
-      "huge": false
-    },
-    {
-      "time": 62,
-      "zombieId": "polevault",
-      "count": 2,
-      "rows": [
-        0,
-        4
-      ],
-      "huge": false
-    },
-    {
-      "time": 82,
-      "zombieId": "basic",
-      "count": 3,
-      "rows": [
-        1,
-        2,
-        3
-      ],
-      "huge": false
-    },
-    {
-      "time": 100,
-      "zombieId": "flag",
-      "count": 1,
-      "rows": [
-        2
-      ],
-      "huge": true
-    },
-    {
-      "time": 101,
-      "zombieId": "polevault",
-      "count": 2,
-      "rows": [
-        1,
-        3
-      ],
-      "huge": true
-    },
-    {
-      "time": 102,
-      "zombieId": "conehead",
-      "count": 3,
-      "rows": [
-        0,
-        2,
-        4
-      ],
-      "huge": true
-    }
-  ],
-  "hugeWaveTimes": [
-    100
-  ],
+  "progressDuration": 225.0,
   "activeRows": [
     0,
     1,
     2,
     3,
     4
+  ],
+  "waves": [
+    {
+      "time": 25.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 35.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 65.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 85.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 115.0,
+      "zombieId": "basic",
+      "count": 2
+    },
+    {
+      "time": 135.0,
+      "zombieId": "polevault",
+      "count": 1
+    },
+    {
+      "time": 155.0,
+      "zombieId": "polevault",
+      "count": 1
+    },
+    {
+      "time": 155.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 175.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 175.0,
+      "zombieId": "conehead",
+      "count": 1
+    },
+    {
+      "time": 195.0,
+      "zombieId": "conehead",
+      "count": 1
+    },
+    {
+      "time": 195.0,
+      "zombieId": "basic",
+      "count": 1
+    },
+    {
+      "time": 225.0,
+      "zombieId": "flag",
+      "count": 1
+    },
+    {
+      "time": 225.0,
+      "zombieId": "polevault",
+      "count": 1
+    },
+    {
+      "time": 225.0,
+      "zombieId": "conehead",
+      "count": 1
+    },
+    {
+      "time": 225.0,
+      "zombieId": "basic",
+      "count": 5
+    }
   ]
 }

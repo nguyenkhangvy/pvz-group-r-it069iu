@@ -1,11 +1,8 @@
 package com.pvz.entity.plant;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.pvz.data.PlantData;
 import com.pvz.entity.zombie.Zombie;
-import com.pvz.util.DebugDraw;
 
 /**
  * Chomper:
@@ -28,34 +25,42 @@ public class Chomper extends Plant {
 
     public Chomper(PlantData data, int row, int col, float cx, float cy, float w, float h) {
         super(data, row, col, cx, cy, w, h);
+        anim.setState("idle");
+    }
+
+    @Override
+    public void update(float delta) {
+        anim.update(delta);
     }
 
     @Override
     public void updateWithContext(float delta, PlantContext ctx) {
+        update(delta); // chay animation
         if (chompState == ChompState.CHEWING) {
             chewTimer += delta;
             if (chewTimer >= data.chew.chewTime) {
                 chompState = ChompState.READY;
                 chewTimer = 0f;
+                anim.setState("idle"); // nhai xong -> ve idle
             }
-            return; // dang nhai, khong an them
+            return;
         }
 
         // READY: tim zombie cung o de an
         Array<Zombie> here = ctx.zombiesInCell(row, col);
         if (here.size > 0) {
-            // an con gan nhat (x nho nhat -> tien nhat ve nha)
             Zombie target = null;
             float bestX = Float.MAX_VALUE;
             for (Zombie z : here) {
-                if (z.isAlive() && z.getX() < bestX) { target = z; bestX = z.getX(); }
+                if (z.isAlive() && !z.isDying() && z.getX() < bestX) { target = z; bestX = z.getX(); }
             }
             if (target != null) {
-                target.takeDamage(data.chew.chompDamage); // nuot chung
+                target.takeDamage(data.chew.chompDamage);
                 chompState = ChompState.CHEWING;
                 chewTimer = 0f;
+                anim.setState("special"); // an -> chuyen animation nhai
                 com.pvz.manager.AudioManager.get().playGameSound(
-                    com.pvz.manager.AudioManager.CHOMP, 0.9f); // tieng nhai cua Chomper
+                    com.pvz.manager.AudioManager.CHOMP, 0.9f);
             }
         }
     }
@@ -67,11 +72,4 @@ public class Chomper extends Plant {
     }
 
     public boolean isChewing() { return chompState == ChompState.CHEWING; }
-
-    @Override
-    public void drawDebug(SpriteBatch batch) {
-        Color c = isChewing() ? new Color(0.5f, 0.1f, 0.5f, 1f)   // tim dam khi nhai
-                              : new Color(0.7f, 0.1f, 0.7f, 1f);   // tim sang khi ranh
-        DebugDraw.get().rectCentered(batch, x, y, width, height, c);
-    }
 }

@@ -3,7 +3,6 @@ package com.pvz.entity.plant;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.pvz.util.DebugDraw;
 import com.pvz.data.PlantData;
 import com.pvz.entity.AnimationComponent;
 import com.pvz.entity.Entity;
@@ -52,7 +51,6 @@ public abstract class Plant extends Entity {
         if (data.animations == null) return;
         anim.addState("idle", data.animations.idle);
         anim.addState("shooting", data.animations.shooting);
-        anim.addState("eating", data.animations.eating);
         anim.addState("special", data.animations.special);
         anim.setState("idle");
     }
@@ -92,14 +90,7 @@ public abstract class Plant extends Entity {
         if (frame != null) {
             batch.setColor(Color.WHITE);
             batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
-        } else {
-            drawDebug(batch);
         }
-    }
-
-    @Override
-    public void drawDebug(SpriteBatch batch) {
-        DebugDraw.get().rectCentered(batch, x, y, width, height, Color.FOREST);
     }
 
     public int getRow() { return row; }

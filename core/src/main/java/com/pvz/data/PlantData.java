@@ -65,7 +65,6 @@ public class PlantData {
     public static class AnimationStates {
         public String[] idle;
         public String[] shooting;
-        public String[] eating;
         public String[] special;
     }
 }

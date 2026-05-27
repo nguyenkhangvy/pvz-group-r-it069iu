@@ -2,47 +2,71 @@ package com.pvz.entity.plant;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pvz.data.PlantData;
-import com.pvz.util.DebugDraw;
+import com.pvz.manager.AssetProvider;
 
 /**
- * CherryBomb: dat xong dem explodeDelay (1.2s) roi NO vung vuong 3x3
- * (explodeRadius = 1 -> tam +/-1 o), gay explodeDamage cho moi zombie trong vung,
- * sau do tu bien mat.
- *
- * Trong thoi gian cho no, hp dat rat cao (gan nhu bat tu) de khong bi an mat.
+ * CherryBomb: dat xong dem fuse (1.2s) roi no vung 3x3.
+ *  - idle: vua dat xuong
+ *  - special_0: gan no (hien tu giua fuse den luc no)
+ *  - special_1: dang no (hien 1 frame roi bien mat)
  */
 public class CherryBomb extends Plant {
 
     private float fuse = 0f;
     private boolean exploded = false;
+    private float explodeShowTimer = 0f;
+    private static final float EXPLODE_SHOW_TIME = 0.3f;
 
     public CherryBomb(PlantData data, int row, int col, float cx, float cy, float w, float h) {
         super(data, row, col, cx, cy, w, h);
     }
 
     @Override
+    public void update(float delta) {
+        // khong dung animation component tu dong
+    }
+
+    @Override
     public void updateWithContext(float delta, PlantContext ctx) {
-        if (exploded) return;
+        // dang hien anh no -> dem roi bien mat
+        if (exploded) {
+            explodeShowTimer += delta;
+            if (explodeShowTimer >= EXPLODE_SHOW_TIME) {
+                kill();
+                ctx.removePlant(this);
+            }
+            return;
+        }
+
         fuse += delta;
         if (fuse >= data.explode.delay) {
-            // No: gay sat thuong vung
             ctx.damageArea(row, col, Math.max(1, data.explode.radius), data.explode.damage);
             exploded = true;
-            kill();              // cherry bomb bien mat sau khi no
-            ctx.removePlant(this);
+            explodeShowTimer = 0f;
+            com.pvz.manager.AudioManager.get().playGameSound(com.pvz.manager.AudioManager.EXPLODE, 0.9f);
+            // khong kill ngay, cho hien anh no (special_1) mot chut
         }
     }
 
     @Override
-    public void drawDebug(SpriteBatch batch) {
-        // do dam khi sap no
-        float t = data.explode.delay > 0 ? Math.min(1f, fuse / data.explode.delay) : 1f;
-        Color c = new Color(1f, 0.2f * (1f - t), 0f, 1f);
-        DebugDraw.get().rectCentered(batch, x, y, width, height, c);
+    public void draw(SpriteBatch batch) {
+        String region;
+        if (exploded) {
+            region = "cherrybomb_special_1";     // dang no
+        } else if (fuse >= data.explode.delay * 0.5f) {
+            region = "cherrybomb_special_0";     // gan no (nua sau cua fuse)
+        } else {
+            region = "cherrybomb_idle";          // vua dat xuong
+        }
+        TextureRegion frame = AssetProvider.get().region(region);
+        if (frame != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
+        }
     }
 
-    /** Cherry Bomb sap no -> zombie di xuyen qua, khong dung lai an. */
     @Override
     public boolean isEatable() {
         return false;

@@ -2,7 +2,7 @@ package com.pvz.data;
 
 /**
  * LevelData: anh xa 1-1 voi levels/level_1_X.json.
- * Chua wave timeline, huge wave, sun interval, max plants, unlock...
+ * Chua spawn timeline, sun interval, max plants, progress duration.
  */
 public class LevelData {
     public String id;                  // "1-1"
@@ -10,31 +10,15 @@ public class LevelData {
     public float sunFallInterval;      // bao lau roi 1 sun tu troi (giay)
     public int sunFallAmount;          // moi sun troi roi bao nhieu
     public float progressDuration;     // tong thoi gian du kien (giay) cho thanh progress
+    public int[] activeRows;            // cac hang hoat dong, vd [1,2,3] hoac [0,1,2,3,4]
 
-    public String unlockPlant;         // cay mo khoa khi THANG level nay (null neu khong)
-    public String unlockZombie;        // zombie moi xuat hien (chi de hien o win screen)
-    public String unlockFeature;       // "shovel" | "speed" | null
+    public Wave[] waves;               // timeline spawn zombie theo thoi gian
 
-    /**
-     * Cac hang (lane) HOAT DONG trong level nay. Index hang tu 0..4 (0 = duoi cung).
-     * Hang giua = 2. Vi du:
-     *   [2]        -> chi 1 hang giua
-     *   [1,2,3]    -> 3 hang giua
-     *   [0,1,2,3,4]-> ca 5 hang
-     * Neu null/empty -> mac dinh dung TAT CA 5 hang.
-     * Chi hang active moi co co, moi trong duoc cay, va moi co zombie.
-     */
-    public int[] activeRows;
-
-    public Wave[] waves;               // timeline cac dot zombie
-    public float[] hugeWaveTimes;      // cac moc (giay) la huge wave (mot lv co the nhieu)
-
-    /** Mot dot spawn: tai thoi diem `time`, sinh `count` con zombie loai `zombieId`. */
+    /** Tai thoi diem `time`, sinh `count` con zombie loai `zombieId`. */
     public static class Wave {
-        public float time;             // giay ke tu dau man
+        public float time;             // giay ke tu dau tran
         public String zombieId;
         public int count;
         public int[] rows;             // hang nao (null/empty = ngau nhien)
-        public boolean huge;           // co phai huge wave khong
     }
 }

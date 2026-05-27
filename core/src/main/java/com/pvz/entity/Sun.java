@@ -3,7 +3,6 @@ package com.pvz.entity;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.pvz.util.DebugDraw;
 import com.pvz.manager.AssetProvider;
 import com.pvz.core.GameConfig;
 
@@ -48,14 +47,7 @@ public class Sun extends Entity {
         if (frame != null) {
             batch.setColor(Color.WHITE);
             batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
-        } else {
-            drawDebug(batch);
         }
-    }
-
-    @Override
-    public void drawDebug(SpriteBatch batch) {
-        DebugDraw.get().rectCentered(batch, x, y, width, height, Color.GOLD);
     }
 
     public int getValue() { return value; }

@@ -3,20 +3,24 @@ package com.pvz.manager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
+import com.pvz.core.Difficulty;
 import com.pvz.core.GameConfig;
 
 /**
- * SaveManager (SINGLETON - Creational pattern).
+ * SaveManager (SINGLETON).
  *
- * Theo yeu cau:
- *  - Save game CHI luu lastUnlockedLevel (so nguyen 1..8).
- *  - Continue -> vao choosing plant screen cua level cuoi da unlock.
- *  - Thua level X -> save GIU nguyen X (khong tut).
- *  - Thang level X -> save = X+1.
- *  - Hoan thanh het (thang 1-8) -> reset ve 1.
- *  - Music setting luu RIENG (file khac), khong chung voi save game.
+ * Ho tro 3 DO KHO (Easy/Normal/Hard), moi do kho luu RIENG:
+ *  - lastUnlockedLevel cua rieng do kho do (easyLevel/normalLevel/hardLevel)
+ *  - co "da hoan thanh full" cua do kho do (easyDone/normalDone/hardDone)
  *
- * Cac cay unlock duoc TINH TU lastUnlockedLevel (khong luu danh sach cay).
+ * Khoa tien trinh:
+ *  - Normal chi mo khi easyDone = true (hoan thanh full Easy).
+ *  - Hard chi mo khi normalDone = true.
+ *
+ * Khi doi do kho, KHONG mat tien do: moi do kho giu lastUnlockedLevel rieng,
+ * nen Hard->Easy thi Easy ve dung level dang choi do cua Easy.
+ *
+ * Music setting van luu RIENG (SETTINGS_FILE).
  */
 public final class SaveManager {
 
@@ -28,18 +32,24 @@ public final class SaveManager {
     private SaveData saveData;
     private SettingsData settingsData;
 
-    private SaveManager() {
-        load();
-    }
+    private SaveManager() { load(); }
 
     public static SaveManager get() {
         if (instance == null) instance = new SaveManager();
         return instance;
     }
 
-    // ----- cau truc du lieu luu xuong dia -----
+    // ----- cau truc luu xuong dia -----
     public static class SaveData {
-        public int lastUnlockedLevel = GameConfig.FIRST_LEVEL; // 1..8
+        public String difficulty = "EASY";   // do kho dang chon
+
+        public int easyLevel = GameConfig.FIRST_LEVEL;
+        public int normalLevel = GameConfig.FIRST_LEVEL;
+        public int hardLevel = GameConfig.FIRST_LEVEL;
+
+        public boolean easyDone = false;      // da hoan thanh full Easy chua
+        public boolean normalDone = false;    // da hoan thanh full Normal chua
+        public boolean hardDone = false;      // da hoan thanh full Hard chua
     }
 
     public static class SettingsData {
@@ -53,45 +63,91 @@ public final class SaveManager {
         Json json = new Json();
         FileHandle save = Gdx.files.local(SAVE_FILE);
         saveData = save.exists() ? json.fromJson(SaveData.class, save) : new SaveData();
-
         FileHandle settings = Gdx.files.local(SETTINGS_FILE);
         settingsData = settings.exists() ? json.fromJson(SettingsData.class, settings) : new SettingsData();
     }
 
-    public void persistSave() {
-        new Json().toJson(saveData, Gdx.files.local(SAVE_FILE));
-    }
+    public void persistSave() { new Json().toJson(saveData, Gdx.files.local(SAVE_FILE)); }
+    public void persistSettings() { new Json().toJson(settingsData, Gdx.files.local(SETTINGS_FILE)); }
 
-    public void persistSettings() {
-        new Json().toJson(settingsData, Gdx.files.local(SETTINGS_FILE));
-    }
+    // ===================== DO KHO =====================
+    public Difficulty getDifficulty() { return Difficulty.fromName(saveData.difficulty); }
 
-    // ----- level -----
-    public int getLastUnlockedLevel() { return saveData.lastUnlockedLevel; }
-
-    /**
-     * Goi khi bam "Start New": dat lai tien do ve level 1 va luu xuong.
-     * He qua: Continue sau do cung se vao level 1 (tien do cu bi xoa).
-     */
-    public void resetToFirstLevel() {
-        saveData.lastUnlockedLevel = GameConfig.FIRST_LEVEL;
+    public void setDifficulty(Difficulty d) {
+        saveData.difficulty = d.name();
         persistSave();
     }
 
-    /** Goi khi THANG level `level`. Mo khoa level tiep; neu het thi reset ve 1. */
+    /** Do kho `d` co duoc mo khong (theo dieu kien hoan thanh muc truoc). */
+    public boolean isDifficultyUnlocked(Difficulty d) {
+        switch (d) {
+            case EASY:   return true;                 // luon mo
+            case NORMAL: return saveData.easyDone;     // can hoan thanh Easy
+            case HARD:   return saveData.normalDone;   // can hoan thanh Normal
+            default:     return false;
+        }
+    }
+
+    public boolean isDone(Difficulty d) {
+        switch (d) {
+            case EASY:   return saveData.easyDone;
+            case NORMAL: return saveData.normalDone;
+            case HARD:   return saveData.hardDone;
+            default:     return false;
+        }
+    }
+
+    // ===================== LEVEL (theo do kho dang chon) =====================
+    public int getLastUnlockedLevel() { return levelOf(getDifficulty()); }
+
+    private int levelOf(Difficulty d) {
+        switch (d) {
+            case EASY:   return saveData.easyLevel;
+            case NORMAL: return saveData.normalLevel;
+            case HARD:   return saveData.hardLevel;
+            default:     return GameConfig.FIRST_LEVEL;
+        }
+    }
+
+    private void setLevelOf(Difficulty d, int lv) {
+        switch (d) {
+            case EASY:   saveData.easyLevel = lv; break;
+            case NORMAL: saveData.normalLevel = lv; break;
+            case HARD:   saveData.hardLevel = lv; break;
+        }
+    }
+
+    private void setDoneOf(Difficulty d, boolean done) {
+        switch (d) {
+            case EASY:   saveData.easyDone = done; break;
+            case NORMAL: saveData.normalDone = done; break;
+            case HARD:   saveData.hardDone = done; break;
+        }
+    }
+
+    /**
+     * Bam "Start New": dat lai tien do ve level 1 cho DO KHO DANG CHON (cac do
+     * kho khac giu nguyen). Khong dung co "done" (van giu thanh tich da hoan thanh).
+     */
+    public void resetToFirstLevel() {
+        setLevelOf(getDifficulty(), GameConfig.FIRST_LEVEL);
+        persistSave();
+    }
+
+    /** Thang level `level` o do kho dang chon. Mo khoa level tiep; het thi danh dau done + reset ve 1. */
     public void onLevelWon(int level) {
+        Difficulty d = getDifficulty();
         if (level >= GameConfig.LAST_LEVEL) {
-            saveData.lastUnlockedLevel = GameConfig.FIRST_LEVEL; // hoan thanh -> reset
-        } else if (level >= saveData.lastUnlockedLevel) {
-            saveData.lastUnlockedLevel = level + 1;
+            setDoneOf(d, true);                          // hoan thanh full -> danh dau done
+            setLevelOf(d, GameConfig.FIRST_LEVEL);       // reset ve 1 (choi lai duoc)
+        } else if (level >= levelOf(d)) {
+            setLevelOf(d, level + 1);
         }
         persistSave();
     }
 
-    /** Thua thi khong thay doi save (giu nguyen). Ham nay de cho ro y dinh. */
-    public void onLevelLost(int level) {
-        // intentionally no-op
-    }
+    /** Thua thi giu nguyen (no-op). */
+    public void onLevelLost(int level) { }
 
     // ----- music settings -----
     public SettingsData settings() { return settingsData; }

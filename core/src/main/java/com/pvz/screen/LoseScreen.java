@@ -1,63 +1,72 @@
 package com.pvz.screen;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.pvz.manager.SaveManager;
 import com.pvz.manager.AudioManager;
+import com.pvz.manager.SaveManager;
 import com.pvz.manager.ScreenManager;
+import com.pvz.util.MenuButton;
 
 /**
- * LoseScreen: hien Menu va Restart.
- * Restart -> quay lai ChoosePlantScreen cua CHINH level do (theo yeu cau).
- * Save GIU nguyen (khong tut level).
+ * LoseScreen (GAME OVER) - chi can 1 anh nen (da co logo GAME OVER + chu)
+ * va 2 nut anh (RESTART, MENU).
+ *
+ * Anh can them vao assets/images/ (folder nao cung duoc, ten khong trung):
+ *   bg_gameover  - anh nen full man 1280x720 (da ve san logo + chu).
+ *   btn_restart  - nut RESTART.   (co the them btn_restart_down cho luc nhan)
+ *   btn_menu     - nut MENU.      (co the them btn_menu_down)
+ *
+ * Logic giu nguyen: Restart -> ChoosePlantScreen cua chinh level do (save khong tut).
+ * Menu -> StartupScreen.
  */
 public class LoseScreen extends BaseScreen {
 
     private final int level;
-    private final Stage stage;
-    private final Skin skin;
+    private final MenuButton restartBtn, menuBtn;
+
+    // ---- toa do 2 nut tu mockup ----
+    private static final float BTN_W = 227f, BTN_H = 66f, BTN_Y = 156f;
+    private static final float RESTART_X = 383f, MENU_X = 642f;
 
     public LoseScreen(int level) {
         this.level = level;
-        stage = new Stage(viewport, batch);
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-        Gdx.input.setInputProcessor(stage);
-        SaveManager.get().onLevelLost(level); // no-op, giu nguyen save
-        build();
+        SaveManager.get().onLevelLost(level); // save giu nguyen
+
+        restartBtn = new MenuButton("RESTART", RESTART_X, BTN_Y, BTN_W, BTN_H)
+                         .setImage("btn_restart", false);
+        menuBtn    = new MenuButton("MENU",    MENU_X,    BTN_Y, BTN_W, BTN_H)
+                         .setImage("btn_menu", false);
     }
 
-    private void build() {
-        Table root = new Table();
-        root.setFillParent(true);
-        root.center();
-        root.add(new Label("GAME OVER - Level 1-" + level, skin)).padBottom(20).row();
-
-        TextButton restart = new TextButton("Restart", skin);
-        restart.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) {
-                    AudioManager.get().playClick();
-                ScreenManager.get().setScreen(new ChoosePlantScreen(level));
-            }
-        });
-        TextButton menu = new TextButton("Menu", skin);
-        menu.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent e, Actor a) {
-                    AudioManager.get().playClick();
-                ScreenManager.get().setScreen(new StartupScreen());
-            }
-        });
-        root.add(restart).width(220).height(55).padBottom(10).row();
-        root.add(menu).width(220).height(55).row();
-        stage.addActor(root);
+    @Override
+    protected void update(float delta) {
+        restartBtn.update(viewport);
+        menuBtn.update(viewport);
+        if (restartBtn.pollClick(viewport)) {
+            AudioManager.get().playClick();
+            markSwitched();
+            ScreenManager.get().setScreen(new ChoosePlantScreen(level));
+        } else if (menuBtn.pollClick(viewport)) {
+            AudioManager.get().playClick();
+            markSwitched();
+            ScreenManager.get().setScreen(new StartupScreen());
+        }
     }
 
-    @Override protected void update(float delta) { stage.act(delta); }
-    @Override protected void draw() { stage.draw(); }
-    @Override public void dispose() { super.dispose(); stage.dispose(); skin.dispose(); }
+    @Override
+    protected void draw() {
+        batch.begin();
+
+        // anh nen full man (da co logo GAME OVER + chu + trang tri)
+        drawBackground("bg_gameover");
+
+        // 2 nut
+        restartBtn.draw(batch, null);
+        menuBtn.draw(batch, null);
+
+        batch.end();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
 }

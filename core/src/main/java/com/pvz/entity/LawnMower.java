@@ -3,7 +3,6 @@ package com.pvz.entity;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.pvz.util.DebugDraw;
 import com.pvz.manager.AssetProvider;
 
 /**
@@ -48,15 +47,8 @@ public class LawnMower extends Entity {
         TextureRegion frame = AssetProvider.get().region("lawnmower");
         if (frame != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(frame, x - width / 2f, y - height / 2f, width, height);
-        } else {
-            drawDebug(batch);
+            batch.draw(frame, x - width - 4f/ 2f, y - height + 4f/ 2f, 2*width, 2*height);
         }
-    }
-
-    @Override
-    public void drawDebug(SpriteBatch batch) {
-        DebugDraw.get().rectCentered(batch, x, y, width, height, Color.YELLOW);
     }
 
     public int getRow() { return row; }

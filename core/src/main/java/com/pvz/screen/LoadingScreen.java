@@ -6,8 +6,6 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.pvz.core.GameConfig;
 import com.pvz.manager.AudioManager;
 import com.pvz.manager.ScreenManager;
@@ -37,8 +35,6 @@ public class LoadingScreen extends BaseScreen {
     private static final String THEME_NAME = "theme"; // ten file nhac nen (bo qua duoi: .mp3/.ogg/.wav)
 
     private final AssetManager assets = new AssetManager();
-    private final BitmapFont font = new BitmapFont();
-    private final GlyphLayout layout = new GlyphLayout();
 
     private boolean queued = false;
     private boolean done = false;
@@ -46,7 +42,6 @@ public class LoadingScreen extends BaseScreen {
     private float shownProgress = 0f;
 
     public LoadingScreen() {
-        font.getData().setScale(2f);
         queueAssets();
     }
 
@@ -118,37 +113,41 @@ public class LoadingScreen extends BaseScreen {
     @Override
     protected void draw() {
         DebugDraw dd = DebugDraw.get();
-        float cx = GameConfig.WORLD_WIDTH / 2f;
-        float cy = GameConfig.WORLD_HEIGHT / 2f;
+        float W = GameConfig.WORLD_WIDTH;
+        float cx = W / 2f;
 
         batch.begin();
 
-        // chu "LOADING"
-        font.setColor(Color.WHITE);
-        layout.setText(font, "LOADING");
-        font.draw(batch, "LOADING", cx - layout.width / 2f, cy + 80f);
+        // --- NEN (anh "loading_bg") ---
+        drawBackground("loading_bg");
+        // --- THANH TIEN DO ---
+        float barW = 620f, barH = 46f;
+        float bx = cx - barW / 2f, by = 100f;
+        // vien nau
+        dd.rect(batch, bx - 6, by - 6, barW + 12, barH + 12, new Color(0.38f, 0.26f, 0.12f, 1f));
+        // nen long mau kem dam
+        dd.rect(batch, bx, by, barW, barH, new Color(0.86f, 0.80f, 0.62f, 1f));
+        // phan tien do mau xanh la (2 sac de tao cam giac soc)
+        float fillW = barW * shownProgress;
+        dd.rect(batch, bx, by, fillW, barH, new Color(0.42f, 0.78f, 0.28f, 1f));
+        dd.rect(batch, bx, by + barH * 0.5f, fillW, barH * 0.5f, new Color(0.52f, 0.86f, 0.34f, 1f));
 
-        // khung thanh tien do
-        float barW = 600f, barH = 34f;
-        float bx = cx - barW / 2f, by = cy - 10f;
-        dd.rect(batch, bx - 3, by - 3, barW + 6, barH + 6, new Color(0.5f, 0.42f, 0.22f, 1f)); // vien
-        dd.rect(batch, bx, by, barW, barH, new Color(0.12f, 0.12f, 0.12f, 1f));                 // nen
-        dd.rect(batch, bx, by, barW * shownProgress, barH, new Color(0.35f, 0.75f, 0.35f, 1f)); // tien do
-
-        // phan tram
-        int pct = Math.round(shownProgress * 100f);
-        font.getData().setScale(1.4f);
-        layout.setText(font, pct + "%");
-        font.draw(batch, pct + "%", cx - layout.width / 2f, by - 20f);
-        font.getData().setScale(2f);
-
+        // --- ICON CHAY tren dau thanh (anh "loading_runner" neu co; khong thi cuc tron) ---
+        float runnerSize = barH + 80f;
+        float runnerX = bx + fillW - runnerSize / 2f;
+        float runnerY = by + barH / 2f - runnerSize / 2f;
+        runnerX = Math.max(bx - runnerSize / 4f, Math.min(runnerX, bx + barW - runnerSize * 0.75f));
+        com.badlogic.gdx.graphics.g2d.TextureRegion runner =
+            com.pvz.manager.AssetProvider.get().region("loading_runner");
+        batch.setColor(Color.WHITE);
+        batch.draw(runner, runnerX, runnerY, runnerSize, runnerSize);
         batch.end();
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        font.dispose();
-        // KHONG dispose 'assets' o day: da ban giao cho AudioManager dung tiep.
+        // KHONG dispose font (dung chung qua FontProvider) va KHONG dispose 'assets'
+        // (da ban giao cho AudioManager/AssetProvider dung tiep).
     }
 }

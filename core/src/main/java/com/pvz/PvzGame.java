@@ -29,6 +29,8 @@ public class PvzGame extends Game {
         super.dispose();
         AudioManager.get().dispose();
         com.pvz.util.DebugDraw.get().dispose();
+        com.pvz.util.UiKit.get().dispose();
+        com.pvz.manager.FontProvider.get().dispose();
         com.pvz.manager.AssetProvider.get().dispose();
     }
 }
